@@ -7,6 +7,7 @@ import com.f1forhelp.ovo.AppDatabase
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @Entity(tableName = "bleed_events")
 data class BleedEvent(
@@ -34,6 +35,19 @@ data class BleedEvent(
         fun addObserver(observer: () -> Unit) { observers.add(observer) }
         fun removeObserver(observer: () -> Unit) { observers.remove(observer) }
 
+        fun fromCsvLine(line: String): BleedEvent {
+            val parts = line.split(",")
+
+            // Parse the ISO-8601 string
+            val zdt = ZonedDateTime.parse(parts[0], DateTimeFormatter.ISO_ZONED_DATE_TIME)
+            val epochMillis = zdt.toInstant().toEpochMilli()
+
+            // Create BleedEvent
+            return BleedEvent(
+                epochMillis = epochMillis,
+                // map other fields here if needed, e.g., parts[1]...
+            )
+        }
     }
     fun save() {
         db!!.bleedEventDao().insert(this)

@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -27,7 +26,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,7 +41,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.f1forhelp.ovo.data.BleedEvent
-import com.f1forhelp.ovo.data.BleedEventDao
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -62,8 +59,6 @@ fun MenuMain(navController: NavController) {
     Column(modifier = Modifier
         .statusBarsPadding()
     ) {
-
-
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),

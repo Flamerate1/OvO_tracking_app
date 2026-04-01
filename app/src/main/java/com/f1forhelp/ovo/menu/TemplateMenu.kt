@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 
 @Composable
-fun ScreenA(navController: NavController) {
+fun TemplateMenu(navController: NavController) {
     Column {
         Text("Screen A")
 
