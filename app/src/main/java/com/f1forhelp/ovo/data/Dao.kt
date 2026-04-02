@@ -7,10 +7,10 @@ interface BleedEventDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insert(event: BleedEvent)
 
-    @Query("DELETE FROM bleed_events WHERE epochMillis = :epochMillis")
+    @Query("DELETE FROM bleedEvents WHERE epochMillis = :epochMillis")
     fun deleteByEpoch(epochMillis: Long)
 
-    @Query("SELECT * FROM bleed_events ORDER BY epochMillis DESC")
+    @Query("SELECT * FROM bleedEvents ORDER BY epochMillis DESC")
     fun getAll(): List<BleedEvent>
 }
 

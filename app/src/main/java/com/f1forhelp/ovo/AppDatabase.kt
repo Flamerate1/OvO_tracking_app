@@ -17,12 +17,18 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile private var INSTANCE: AppDatabase? = null
 
         fun getDatabase(context: Context): AppDatabase {
+            // Use to forcefully destroy database
+            //context.deleteDatabase("ovo.db")
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "ovo_db"
-                ).allowMainThreadQueries().build()
+                    "ovo.db"
+                )
+                    .allowMainThreadQueries()
+                    //.fallbackToDestructiveMigration() // Use ALSO to help forcefully destroy database
+                    .build()
+
                 INSTANCE = instance
                 instance
             }

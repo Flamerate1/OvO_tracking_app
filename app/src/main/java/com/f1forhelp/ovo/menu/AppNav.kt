@@ -22,6 +22,9 @@ fun AppNav() {
         composable("import") {
             MenuImport(navController)
         }
+        composable("backup") {
+            MenuBackup(navController)
+        }
         /*composable("settings") {
             MenuSettings(navController)
         }*/

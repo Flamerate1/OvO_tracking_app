@@ -9,7 +9,7 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@Entity(tableName = "bleed_events")
+@Entity(tableName = "bleedEvents")
 data class BleedEvent(
     @PrimaryKey val epochMillis: Long
 ) {
