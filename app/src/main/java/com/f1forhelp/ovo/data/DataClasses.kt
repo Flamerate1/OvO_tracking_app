@@ -24,9 +24,14 @@ data class BleedEvent(
         }
         fun getAll(): List<BleedEvent> {
             val events = db!!.bleedEventDao().getAll().sortedBy{it.epochMillis}
-
             return events
         }
+
+        fun getMostRecent(): BleedEvent {
+            val events = getAll()
+            return events[events.size-1]
+        }
+
         fun delete(epochMillis : Long) { db!!.bleedEventDao().deleteByEpoch(epochMillis)}
 
         // Observers

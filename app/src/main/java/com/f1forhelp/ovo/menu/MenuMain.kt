@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.f1forhelp.ovo.data.BleedEvent
 import java.time.DateTimeException
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -80,7 +81,12 @@ fun MenuMain(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        BleedEventList()
+        //BleedEventList()
+
+        //val dayOfWeek = getDayOfWeek(mostRecentBleedEvent.epochMillis)
+
+
+        CalendarGrid()
 
         // Stores the onRecord function inputting for its own fields.
         // Is aligned with the bottom of the screen by default.

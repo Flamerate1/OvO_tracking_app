@@ -160,6 +160,9 @@ fun exportDbToUri(context: Context, uri: Uri) {
     }
 }
 
+
+
+// UNUSED SINCE GOING WITH WHOLE WRITE INSTEAD WITH CsvManager
 // Copies a file from app's parent directory to user-chosen Uri
 fun copyFileToUri(context: Context, fileName: String, uri: Uri) {
     val sourceFile = File(context.getExternalFilesDir(null), fileName)
