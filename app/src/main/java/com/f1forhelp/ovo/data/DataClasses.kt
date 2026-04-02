@@ -49,6 +49,12 @@ data class BleedEvent(
             )
         }
     }
+
+    enum class Format {
+        EPOCH_MILLIS,
+        ZONED_DATE_TIME
+    }
+
     fun save() {
         db!!.bleedEventDao().insert(this)
         BleedEvent.notifyObservers()

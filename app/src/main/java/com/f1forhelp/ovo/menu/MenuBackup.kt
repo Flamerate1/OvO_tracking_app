@@ -26,7 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.f1forhelp.ovo.data.BleedEvent
 import com.f1forhelp.ovo.data.CsvManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 
 @Composable
@@ -40,22 +44,6 @@ fun MenuBackup(navController: NavController) {
         TopButtons(navController)
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        var toggleState by remember { mutableStateOf(false) }
-
-        /* Acceptable choices for choice buttons
-        ToggleOption(
-            label = "ZonedDateTime?",
-            checked = toggleState,
-            onCheckedChange = { toggleState = it }
-        )
-        TwoChoiceSwitch(
-            label = "Export to: ",
-            option1 = "ZonedDateTime",
-            option2 = "EpochMillis",
-            checked = toggleState,
-            onCheckedChange = { toggleState = it }
-        )*/
 
         val options = listOf("EpochMillis", "ZonedDateTime")
         var choice by remember { mutableStateOf(options[0]) }
@@ -84,7 +72,6 @@ fun MenuBackup(navController: NavController) {
 
             val context = LocalContext.current
 
-            // Launcher for "Save As" dialog
             val exportDbLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.CreateDocument("application/x-sqlite3"),
                 onResult = { uri ->
@@ -101,14 +88,24 @@ fun MenuBackup(navController: NavController) {
                 Text("Export DB")
             }
 
-
             val fileName = "bleedEvents.csv"
-            // Launcher for system "Save As" dialog
             val exportLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.CreateDocument("*/*"), // allow any file type
+                contract = ActivityResultContracts.CreateDocument("text/csv"),
                 onResult = { uri ->
                     if (uri != null) {
-                        copyFileToUri(context, fileName, uri)
+                        val format = when (choice) {
+                            "EpochMillis" -> BleedEvent.Format.EPOCH_MILLIS
+                            "ZonedDateTime" -> BleedEvent.Format.ZONED_DATE_TIME
+                            else -> BleedEvent.Format.ZONED_DATE_TIME // fallback
+                        }
+
+                        CoroutineScope(Dispatchers.IO).launch {
+                            CsvManager.writeBleedEventsToUri(
+                                context = context,
+                                uri = uri,
+                                format = format // <-- your enum
+                            )
+                        }
                     }
                 }
             )
@@ -126,43 +123,6 @@ fun MenuBackup(navController: NavController) {
     }
 }
 
-/* Acceptable choices for choice buttons
-@Composable
-fun ToggleOption(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(8.dp)
-    ) {
-        Text(text = label, modifier = Modifier.weight(1f))
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange
-        )
-    }
-}
-
-@Composable
-fun TwoChoiceSwitch(
-    label: String,
-    option1: String,
-    option2: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
-        Text(text = label, modifier = Modifier.weight(1f))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(option1)
-            Switch(checked = checked, onCheckedChange = onCheckedChange)
-            Text(option2)
-        }
-    }
-}
-*/
 @Composable
 fun TwoChoiceRadio(
     label: String,
