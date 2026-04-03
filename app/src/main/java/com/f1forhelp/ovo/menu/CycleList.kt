@@ -37,7 +37,7 @@ fun CycleList() {
             .statusBarsPadding()
     ) {
         items(cycles) { cycle ->
-            Row(
+            /*Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
@@ -49,7 +49,7 @@ fun CycleList() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
-            }
+            }*/
             HorizontalDivider()
         }
     }

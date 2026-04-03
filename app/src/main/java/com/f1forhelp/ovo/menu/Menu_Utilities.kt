@@ -50,5 +50,7 @@ fun TopButtons(navController: NavController) {
 
 @Composable
 fun PredictionText() {
-    Text("Next BleedEvent predicted in 00 days")
+    val daysLeft = 15
+    val madDays = 0.5
+    Text("Next bleed event in $daysLeft±$madDays days")
 }
