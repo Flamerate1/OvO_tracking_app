@@ -3,6 +3,7 @@ package com.f1forhelp.ovo.menu.main
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -61,6 +64,8 @@ fun MenuMain(navController: NavController) {
     Column(modifier = Modifier
         .statusBarsPadding()
     ) {
+        var showMenu by remember { mutableStateOf(false) }
+
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
@@ -72,7 +77,7 @@ fun MenuMain(navController: NavController) {
             Spacer(modifier=Modifier.size(10.dp))
 
             Button(
-                onClick = { navController.navigate("settings") },
+                onClick = { showMenu = true },
                 shape = CircleShape,
                 modifier = Modifier.size(56.dp),
                 contentPadding = PaddingValues(0.dp)
@@ -82,6 +87,10 @@ fun MenuMain(navController: NavController) {
                     contentDescription = "Settings"
                 )
             }
+        }
+
+        if (showMenu) {
+            MenuDialog(onDismiss = {showMenu = false}, navController)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -96,6 +105,47 @@ fun MenuMain(navController: NavController) {
         // Is aligned with the bottom of the screen by default.
         InlineTimeDisplay(onRecord)
     }
+}
+
+@Composable
+fun MenuDialog(
+    onDismiss: () -> Unit,
+    navController: NavController
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Settings") },
+        text = {
+            Column {
+                TextButton(onClick = {
+                    navController.navigate("import")
+                    onDismiss()
+                }) {
+                    Text("Import Data")
+                }
+
+                TextButton(onClick = {
+                    navController.navigate("backup")
+                    onDismiss()
+                }) {
+                    Text("Backup Data")
+                }
+
+                TextButton(onClick = {
+                    navController.navigate("viewData")
+                    onDismiss()
+                }) {
+                    Text("View Data")
+                }
+            }
+        },
+        confirmButton = {}, // not needed
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        }
+    )
 }
 
 @Composable
