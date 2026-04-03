@@ -17,6 +17,11 @@ fun AppNav() {
         composable("main") {
             MenuMain(navController)
         }
+
+        //region Settings
+        composable("notifications") {
+            MenuNotifications(navController)
+        }
         composable("import") {
             MenuImport(navController)
         }
@@ -26,12 +31,17 @@ fun AppNav() {
         composable("viewData") {
             MenuViewData(navController)
         }
+        //endregion
+        //region ViewData
         composable("bleedEventData") {
             MenuBleedEventData(navController)
         }
         composable("cycleData") {
             MenuCycleData(navController)
         }
+        //endregion
+
+
         /*composable("settings") {
             MenuSettings(navController)
         }*/

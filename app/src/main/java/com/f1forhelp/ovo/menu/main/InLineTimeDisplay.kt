@@ -1,5 +1,6 @@
 package com.f1forhelp.ovo.menu.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,11 +8,18 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -28,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.time.ZoneId
@@ -64,51 +73,68 @@ fun InlineTimeDisplay(
 
     LaunchedEffect(Unit) { updateToSystemTime() }
 
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom, // push content to bottom
-        modifier = Modifier.padding(16.dp)
-            .fillMaxHeight()  // must fill available height!
-            .navigationBarsPadding(), // lifts everything above system buttons
+    Box(
+        modifier = Modifier
+            .padding(5.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(20.dp))
+            .padding(10.dp),
+        contentAlignment = Alignment.Center
     ) {
-        // Row for month/day/hour/minute
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            // Reset fields to system time
-            ResetTimeFieldsButton { updateToSystemTime() }
+        Column{
+            Spacer(modifier=Modifier.size(5.dp))
+            // Row for month/day/hour/minute
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // Reset fields to system time
+                ResetTimeFieldsButton { updateToSystemTime() }
 
-            // Month
-            StepperNumber(value = month, onValueChange = { month = it }, min = 1, max = 12)
-            Text(" / ", style = MaterialTheme.typography.bodyLarge)
+                // Month
+                StepperNumber(value = month, onValueChange = { month = it }, min = 1, max = 12)
+                Text(" / ", style = MaterialTheme.typography.bodyLarge)
 
-            // Day
-            StepperNumber(value = day, onValueChange = { day = it }, min = 1, max = 31)
-            Text(" / ", style = MaterialTheme.typography.bodyLarge)
+                // Day
+                StepperNumber(value = day, onValueChange = { day = it }, min = 1, max = 31)
+                Text(" / ", style = MaterialTheme.typography.bodyLarge)
 
-            // Hour
-            StepperNumber(value = hour, onValueChange = { hour = it }, min = 0, max = 23)
-            Text(" : ", style = MaterialTheme.typography.bodyLarge)
+                // Hour
+                StepperNumber(value = hour, onValueChange = { hour = it }, min = 0, max = 23)
+                Text(" : ", style = MaterialTheme.typography.bodyLarge)
 
-            // Minute
-            StepperNumber(value = minute, onValueChange = { minute = it }, min = 0, max = 59)
+                // Minute
+                StepperNumber(
+                    value = minute,
+                    onValueChange = { minute = it },
+                    min = 0,
+                    max = 59
+                )
 
-            // Timezone dropdown
-            TimezoneDropdown(
-                timezones = tzList,
-                selectedShort = selectedShort,
-                onSelected = { short, full ->
-                    selectedShort = short
-                    selectedFull = full
-                    // Use selectedFull for ZonedDateTime computations
-                }
-            )
+                // Timezone dropdown
+                TimezoneDropdown(
+                    timezones = tzList,
+                    selectedShort = selectedShort,
+                    onSelected = { short, full ->
+                        selectedShort = short
+                        selectedFull = full
+                        // Use selectedFull for ZonedDateTime computations
+                    }
+                )
 
-            Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(4.dp))
 
-            RecordEventWithConfirmation(month, day, hour, minute, selectedFull, onRecord, LocalContext.current)
+                RecordEventWithConfirmation(
+                    month,
+                    day,
+                    hour,
+                    minute,
+                    selectedFull,
+                    onRecord,
+                    LocalContext.current
+                )
 
-        } // end row
-    } // end column
+            } // end row
+
+            Spacer(modifier=Modifier.size(5.dp))
+        } // end column
+    }
 }
 
 @Composable

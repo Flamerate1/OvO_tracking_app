@@ -2,18 +2,23 @@ package com.f1forhelp.ovo.menu.main
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Settings
@@ -62,7 +67,10 @@ fun MenuMain(navController: NavController) {
     }
 
     Column(modifier = Modifier
+        //.fillMaxWidth()
+        .fillMaxSize()
         .statusBarsPadding()
+        .navigationBarsPadding()
     ) {
         var showMenu by remember { mutableStateOf(false) }
 
@@ -93,13 +101,18 @@ fun MenuMain(navController: NavController) {
             MenuDialog(onDismiss = {showMenu = false}, navController)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         CalendarGrid()
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        StatisticsDisplay()
+        Box(modifier=Modifier
+            .weight(1f)
+            .fillMaxWidth()
+            .padding(5.dp)
+            .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(10.dp))
+            .border(3.dp, Color.Black, shape = RoundedCornerShape(10.dp))
+            .padding(10.dp)
+        ) {
+            StatisticsDisplay(modifier=Modifier.fillMaxSize())
+        }
 
         // Stores the onRecord function inputting for its own fields.
         // Is aligned with the bottom of the screen by default.
@@ -117,6 +130,13 @@ fun MenuDialog(
         title = { Text("Settings") },
         text = {
             Column {
+                TextButton(onClick = {
+                    navController.navigate("notifications")
+                    onDismiss()
+                }) {
+                    Text("Notifications")
+                }
+
                 TextButton(onClick = {
                     navController.navigate("import")
                     onDismiss()
