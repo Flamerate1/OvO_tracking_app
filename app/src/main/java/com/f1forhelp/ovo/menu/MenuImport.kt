@@ -29,6 +29,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.f1forhelp.ovo.data.BleedEvent
+import com.f1forhelp.ovo.data.Cycle
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.ZoneId
@@ -110,6 +111,10 @@ fun MenuImport(navController: NavController) {
                 onClick = {
                     bleedEvents.forEach { it.save() } // save each BleedEvent into the SQL database
                     bleedEvents.clear() // Clear the mutable list.
+
+                    // Create new cycle data
+                    Cycle.generateFromMostRecent()
+
                     Toast.makeText(context, "Bleed Events Successfully Imported", Toast.LENGTH_SHORT).show()
                 },
                 enabled = bleedEvents.isNotEmpty()

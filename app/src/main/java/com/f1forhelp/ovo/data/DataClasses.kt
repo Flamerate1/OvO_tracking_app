@@ -84,17 +84,17 @@ data class BleedEvent(
 data class Cycle(
     @PrimaryKey
     val predictionDateMs: Long = 0L,
-    val startMs: Long? = 0L,
-    val nextStartMs: Long? = 0L,
-    val length: Long? = 0L,
+    val startMs: Long = 0L,
+    val nextStartMs: Long = 0L,
+    val length: Long = 0L,
     val valid: Boolean = false,
 
-    val medianLength: Long? = 0L,
-    val madLength: Long? = 0L,
-    val validCycleCount: Int? = 0,
+    val medianLength: Long = 0L,
+    val madLength: Long = 0L,
+    val validCycleCount: Int = 0,
 
-    val predictedNextStartMs: Long? = 0L,
-    val predictedNextOvulationMs: Long? = 0L
+    val predictedNextStartMs: Long = 0L,
+    val predictedNextOvulationMs: Long = 0L
 ) {
     companion object {
         val empty = Cycle()
@@ -105,6 +105,12 @@ data class Cycle(
             if (db == null) {
                 db = AppDatabase.getDatabase(context)
             }
+        }
+
+        fun generateFromMostRecent() {
+            // Create new cycle data
+            val events = BleedEvent.getAll()
+            generateFromBleedEvents(events).save()
         }
 
         fun generateFromBleedEvents(bleedEvents: List<BleedEvent>): Cycle {
@@ -159,11 +165,20 @@ data class Cycle(
             return cycles[cycles.size-1]
         }
 
-        fun delete(startMs : Long) { db!!.cycleDao().deleteByEpoch(startMs)}
+        fun deleteByStartMs(startMs : Long) { db!!.cycleDao().deleteByEpoch(startMs)}
+        fun deleteByPredictionDateMs(predictionDateMs : Long) { db!!.cycleDao().deleteByPredictionDateMs(predictionDateMs)}
 
     }
 
     fun save() {
         db!!.cycleDao().insert(this)
+    }
+
+    fun asZonedDateTime(zone: ZoneId = ZoneId.systemDefault()): ZonedDateTime {
+        return Instant.ofEpochMilli(predictionDateMs).atZone(zone)
+    }
+
+    fun asFormattedString(zone: ZoneId = ZoneId.systemDefault()): String {
+        return this.asZonedDateTime(zone).toString()
     }
 }

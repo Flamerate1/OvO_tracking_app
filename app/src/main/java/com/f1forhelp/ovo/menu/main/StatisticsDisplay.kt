@@ -14,13 +14,50 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.f1forhelp.ovo.data.Cycle
+import com.f1forhelp.ovo.data.toDaysDouble
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.TextStyle
+import java.util.Locale
+
+
+fun Int.toOrdinal(): String {
+    return when {
+        this % 100 in 11..13 -> "${this}th"
+        this % 10 == 1 -> "${this}st"
+        this % 10 == 2 -> "${this}nd"
+        this % 10 == 3 -> "${this}rd"
+        else -> "${this}th"
+    }
+}
 
 @Composable
 fun StatisticsDisplay() {
-    val medianDays = 25.4
-    val madDays = 0.5
-    val predictedOvulationDateString = "Jan 0th"
-    val predictedBleedEventDateString = "Jan 0th"
+
+    val cycle = Cycle.getMostRecent()
+
+
+    val medianDays = cycle.medianLength.toDaysDouble()
+    val medianDaysString = "%.1f".format(medianDays)
+
+    val madDays = cycle.madLength.toDaysDouble()
+    val madDaysString = "%.1f".format(madDays)
+
+
+    val zone = ZoneId.of("America/New_York")
+
+    val predictedBleedZdt = Instant.ofEpochMilli(cycle.predictedNextStartMs).atZone(zone)
+    val bleedMonth = predictedBleedZdt.month.getDisplayName(TextStyle.SHORT, Locale.US).toString()
+    val bleedDay = predictedBleedZdt.dayOfMonth.toOrdinal()
+
+    val predictedOvulationZdt = Instant.ofEpochMilli(cycle.predictedNextOvulationMs).atZone(zone)
+    val ovulationMonth = predictedOvulationZdt.month.getDisplayName(TextStyle.SHORT, Locale.US).toString()
+    val ovulationDay = predictedOvulationZdt.dayOfMonth.toOrdinal()
+
+
+    val predictedOvulationDateString = ovulationMonth + " " + ovulationDay
+    val predictedBleedEventDateString = bleedMonth + " " + bleedDay
 
     Column {
         Box(
@@ -33,7 +70,7 @@ fun StatisticsDisplay() {
                 //.height(200.dp)
         ) {
             Column(modifier = Modifier.padding(20.dp)) {
-                Text("Median length of cycle is ${medianDays}±${madDays} days")
+                Text("Median length of cycle is ${medianDaysString}±${madDaysString} days")
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Ovulation predicted for $predictedOvulationDateString")
                 Spacer(modifier = Modifier.height(4.dp))

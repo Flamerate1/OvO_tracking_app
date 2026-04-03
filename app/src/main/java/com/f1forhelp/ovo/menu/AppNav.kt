@@ -29,6 +29,12 @@ fun AppNav() {
         composable("viewData") {
             MenuViewData(navController)
         }
+        composable("bleedEventData") {
+            MenuBleedEventData(navController)
+        }
+        composable("cycleData") {
+            MenuCycleData(navController)
+        }
         /*composable("settings") {
             MenuSettings(navController)
         }*/

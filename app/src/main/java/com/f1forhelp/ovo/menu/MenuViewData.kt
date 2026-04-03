@@ -8,6 +8,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
@@ -22,9 +23,36 @@ fun MenuViewData(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         //Button( onClick = {navController.navigate("notifications")} ) { Text("Notifications") }
-        Button( onClick = {navController.navigate("import")} ) { Text("BleedEvent Data") }
-        Button( onClick = {navController.navigate("backup")} ) { Text("Cycle Data") }
+        Button( onClick = {navController.navigate("bleedEventData")} ) { Text("BleedEvent Data") }
+        Button( onClick = {navController.navigate("cycleData")} ) { Text("Cycle Data") }
+    }
+}
+
+@Composable
+fun MenuBleedEventData(navController: NavController) {
+    Column(
+        modifier = Modifier
+            .statusBarsPadding()
+    ) {
+        TopButtons(navController)
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         BleedEventList()
+    }
+}
+
+@Composable
+fun MenuCycleData(navController: NavController) {
+    Column(
+        modifier = Modifier
+            .statusBarsPadding()
+    ) {
+        val context = LocalContext.current
+        TopButtons(navController)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        CycleList()
     }
 }

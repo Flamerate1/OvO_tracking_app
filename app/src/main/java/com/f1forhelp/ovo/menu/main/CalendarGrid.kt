@@ -27,6 +27,7 @@ import java.util.Locale
 
 import androidx.compose.ui.graphics.painter.Painter
 import com.f1forhelp.ovo.data.Cycle
+import com.f1forhelp.ovo.ui.theme.Pink80
 import java.time.ZonedDateTime
 
 data class CalendarDay(
@@ -47,6 +48,8 @@ fun processCalendarDays(
 
     val zone = ZoneId.of("America/New_York")
     val bleedZdt = Instant.ofEpochMilli(bleedDay.epochMillis).atZone(zone)
+    val predictedBleedZdt = Instant.ofEpochMilli(cycle.predictedNextStartMs).atZone(zone)
+    val predictedOvulationZdt = Instant.ofEpochMilli(cycle.predictedNextOvulationMs).atZone(zone)
     var current = bleedZdt
 
     var dayOfWeek = bleedZdt.dayOfWeek.value
@@ -73,8 +76,10 @@ fun processCalendarDays(
             defaultColor = Color.White
             color = defaultColor
         }
-        if (current.toLocalDate() == bleedZdt.toLocalDate()) {
-            color = Color.Red
+        when (current.toLocalDate()) {
+            bleedZdt.toLocalDate() -> color = Color.Red
+            predictedOvulationZdt.toLocalDate() -> color = Pink80
+            predictedBleedZdt.toLocalDate() -> color = Color.Red
         }
         calendarDays.add(CalendarDay(day = day, color = color, text = text, isToday = isToday))
 
@@ -90,8 +95,8 @@ fun CalendarGrid(
     val columns = 7
 
     val mostRecentBleedEvent = BleedEvent.getMostRecent()
-
     val mostRecentCycleData = Cycle.getMostRecent()
+
     val calendarDays = processCalendarDays(rows, columns, mostRecentBleedEvent, mostRecentCycleData)
     val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
