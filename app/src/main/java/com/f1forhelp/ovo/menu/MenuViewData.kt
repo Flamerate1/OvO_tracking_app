@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun MenuSettings(navController: NavController) {
+fun MenuViewData(navController: NavController) {
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -22,9 +22,9 @@ fun MenuSettings(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         //Button( onClick = {navController.navigate("notifications")} ) { Text("Notifications") }
-        Button( onClick = {navController.navigate("import")} ) { Text("Import Data") }
-        Button( onClick = {navController.navigate("backup")} ) { Text("Backup Data") }
-        Button( onClick = {navController.navigate("viewData")} ) { Text("View Data") }
+        Button( onClick = {navController.navigate("import")} ) { Text("BleedEvent Data") }
+        Button( onClick = {navController.navigate("backup")} ) { Text("Cycle Data") }
+
+        BleedEventList()
     }
 }
-

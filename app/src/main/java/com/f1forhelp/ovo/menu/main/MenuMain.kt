@@ -1,4 +1,4 @@
-package com.f1forhelp.ovo.menu
+package com.f1forhelp.ovo.menu.main
 
 import android.content.Context
 import android.widget.Toast
@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
@@ -28,6 +29,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,20 +43,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.f1forhelp.ovo.data.BleedEvent
+import com.f1forhelp.ovo.menu.PredictionText
 import java.time.DateTimeException
-import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 @Composable
 fun MenuMain(navController: NavController) {
-    var debugText by remember { mutableStateOf(0L) }
+    var candidateEpochMillis by remember { mutableStateOf(0L) }
 
+    val onRecord: (Long) -> Unit = { inputEpochMillis ->
+        candidateEpochMillis = inputEpochMillis
+        //dao.insert(BleedEvent(epochMillis = candidateEpochMillis))  // insert into DB immediately
 
-    val onRecord: (Long) -> Unit = { newText ->
-        debugText = newText
-        //dao.insert(BleedEvent(epochMillis = debugText))  // insert into DB immediately
-        BleedEvent(epochMillis = debugText).save()
+        BleedEvent(epochMillis = candidateEpochMillis).save()
+
+        // Create new cycle data
+
+        navController.popBackStack()    // optional: go back
+        navController.navigate("main") {
+            launchSingleTop = true
+        }
     }
 
     Column(modifier = Modifier
@@ -66,6 +75,10 @@ fun MenuMain(navController: NavController) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
+            PredictionText()
+
+            Spacer(modifier=Modifier.size(10.dp))
+
             Button(
                 onClick = { navController.navigate("settings") },
                 shape = CircleShape,
@@ -81,19 +94,103 @@ fun MenuMain(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        //BleedEventList()
-
-        //val dayOfWeek = getDayOfWeek(mostRecentBleedEvent.epochMillis)
-
-
         CalendarGrid()
 
         // Stores the onRecord function inputting for its own fields.
         // Is aligned with the bottom of the screen by default.
         InlineTimeDisplay(onRecord)
     }
+}
+@Composable
+fun RecordEventConfirmation(
+    date: ZonedDateTime = ZonedDateTime.now(),
+    onConfirm: () -> Unit = {},
+    onDismiss: () -> Unit = {}
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Confirm Event")
+        },
+        text = {
+            Text("Are you sure you'd like to record event on ${date.toLocalDate()}?")
+            //Text("Are you sure you'd like to record event on ${Instant.ofEpochMilli(epochMillis).atZone(zone)}?")
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text("Yes")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("No")
+            }
+        }
+    )
+}
 
+@Composable
+fun RecordEventWithConfirmation(
+    month: Int,
+    day: Int,
+    hour: Int,
+    minute: Int,
+    selectedFull: String,
+    onRecord: (Long) -> Unit,
+    context: Context
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var candidateEpochMillis by remember { mutableStateOf(0L) }
+    var candidateDate by remember { mutableStateOf<ZonedDateTime?>(null) }
 
+    // Your original RecordEvent button
+    RecordEvent {
+        val epochMillis = try {
+            val date = ZonedDateTime.of(
+                ZonedDateTime.now().year,
+                month,
+                day,
+                hour,
+                minute,
+                0,
+                0,
+                ZoneId.of(selectedFull)
+            )
+            candidateDate = date
+            date.toInstant().toEpochMilli()
+        } catch (e: DateTimeException) {
+            null
+        }
+
+        candidateEpochMillis = epochMillis ?: 0L
+        showDialog = true // trigger confirmation
+    }
+
+    // Confirmation dialog
+    if (showDialog && candidateDate != null) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Confirm Event") },
+            text = {
+                //Text("Are you sure you'd like to record event on ${candidateDate!!.toLocalDate()}?")
+                Text("Are you sure you'd like to record event on ${candidateDate!!.toString()}?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onRecord(candidateEpochMillis)
+                    Toast.makeText(context, "Record successful", Toast.LENGTH_SHORT).show()
+                    showDialog = false
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("No")
+                }
+            }
+        )
+    }
 }
 
 
@@ -111,44 +208,6 @@ fun RecordEvent(onClick: () -> Unit) {
             contentDescription = "Record",
             tint = Color.White // icon color
         )
-    }
-}
-
-@Composable
-fun RecordWithDebug(
-    month: Int,
-    day: Int,
-    hour: Int,
-    minute: Int,
-    selectedFull: String,
-    onRecord: (Long) -> Unit,
-    context: Context
-) {
-    var debugText by remember { mutableStateOf(0L) }
-
-    RecordEvent {
-        val epochMillis = try {
-            ZonedDateTime.of(
-                ZonedDateTime.now().year,
-                month,
-                day,
-                hour,
-                minute,
-                0,
-                0,
-                ZoneId.of(selectedFull)
-            ).toInstant().toEpochMilli()
-        } catch (e: DateTimeException) {
-            null
-        }
-        debugText = if (epochMillis != null) {
-            epochMillis
-        } else {
-            0L
-        }
-
-        Toast.makeText(context, "Record successful", Toast.LENGTH_SHORT).show()
-        onRecord(debugText)
     }
 }
 
@@ -224,9 +283,7 @@ fun InlineTimeDisplay(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            // Record Event Button
-            //RecordEvent { /* Place function here */ }
-            RecordWithDebug(month, day, hour, minute, selectedFull, onRecord, LocalContext.current)
+            RecordEventWithConfirmation(month, day, hour, minute, selectedFull, onRecord, LocalContext.current)
 
         } // end row
     } // end column

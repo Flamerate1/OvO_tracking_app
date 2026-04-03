@@ -1,4 +1,4 @@
-package com.f1forhelp.ovo.menu
+package com.f1forhelp.ovo.menu.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -26,11 +26,12 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 import androidx.compose.ui.graphics.painter.Painter
+import com.f1forhelp.ovo.data.Cycle
 import java.time.ZonedDateTime
 
 data class CalendarDay(
     val day: String,          // e.g., 1..31
-    val color: Color = Color.White,  // background or highlight color
+    val color: Color = Color.White,  // background color
     //var text: String? = null,    // optional text
     val text: String = "",    // optional text
     val icon: Painter? = null,    // optional icon
@@ -40,7 +41,8 @@ data class CalendarDay(
 fun processCalendarDays(
     rows: Int = 5,
     columns: Int = 7,
-    bleedDay: BleedEvent
+    bleedDay: BleedEvent,
+    cycle: Cycle
 ): List<CalendarDay> {
 
     val zone = ZoneId.of("America/New_York")
@@ -63,17 +65,17 @@ fun processCalendarDays(
             1 -> current.month.getDisplayName(TextStyle.SHORT, Locale.US).toString()
             else -> ""
         }
-        var color = when (current.toLocalDate()) {
-            bleedZdt.toLocalDate() -> Color.Red
-            now.toLocalDate() -> {
-                //day += " 今"
-                defaultColor = Color.White
-                defaultColor
-            }
-            else -> defaultColor
-        }
+
+        var color = defaultColor
         var isToday = false
-        if (current.toLocalDate() == now.toLocalDate()) {isToday = true}
+        if (current.toLocalDate() == now.toLocalDate()) {
+            isToday = true
+            defaultColor = Color.White
+            color = defaultColor
+        }
+        if (current.toLocalDate() == bleedZdt.toLocalDate()) {
+            color = Color.Red
+        }
         calendarDays.add(CalendarDay(day = day, color = color, text = text, isToday = isToday))
 
         current = current.plusDays(1)
@@ -87,11 +89,11 @@ fun CalendarGrid(
     val rows = 5
     val columns = 7
 
-
     val mostRecentBleedEvent = BleedEvent.getMostRecent()
-    val calendarDays = processCalendarDays(rows, columns, mostRecentBleedEvent)
-    val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
+    val mostRecentCycleData = Cycle.getMostRecent()
+    val calendarDays = processCalendarDays(rows, columns, mostRecentBleedEvent, mostRecentCycleData)
+    val daysOfWeek = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
     Column {
         Row(
@@ -108,6 +110,17 @@ fun CalendarGrid(
                     Text(day, style = MaterialTheme.typography.bodySmall)
                 }
             }
+        }
+        if (mostRecentBleedEvent == BleedEvent.empty) {
+
+            Row(
+                modifier = Modifier.fillMaxWidth().background(Color.Gray, shape = RoundedCornerShape(4.dp)),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+
+            ) {
+                Text("NO DATA PRESENT YET")
+            }
+            return
         }
 
         Spacer(modifier = Modifier.height(4.dp))

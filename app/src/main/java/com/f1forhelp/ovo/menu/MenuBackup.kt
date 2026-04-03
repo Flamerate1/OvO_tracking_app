@@ -66,7 +66,7 @@ fun MenuBackup(navController: NavController) {
                 modifier = Modifier.weight(1f),
                 onClick = { CsvManager.saveBleedEvents(context) }
             ) {
-                Text("Backup Data")
+                Text("*Backup Data*\n(convenience test button)")
             }
 
 
