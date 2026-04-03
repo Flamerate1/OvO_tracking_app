@@ -45,12 +45,6 @@ data class BleedEvent(
 
         fun delete(epochMillis : Long) { db!!.bleedEventDao().deleteByEpoch(epochMillis)}
 
-        // Observers
-        private val observers = mutableListOf<() -> Unit>()
-        fun notifyObservers() { observers.forEach { it.invoke() } }
-        fun addObserver(observer: () -> Unit) { observers.add(observer) }
-        fun removeObserver(observer: () -> Unit) { observers.remove(observer) }
-
         fun fromCsvLine(line: String): BleedEvent {
             val parts = line.split(",")
 
@@ -73,8 +67,6 @@ data class BleedEvent(
 
     fun save() {
         db!!.bleedEventDao().insert(this)
-
-        notifyObservers()
     }
 
     fun asZonedDateTime(zone: ZoneId = ZoneId.systemDefault()): ZonedDateTime {

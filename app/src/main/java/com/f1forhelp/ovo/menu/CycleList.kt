@@ -16,38 +16,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.f1forhelp.ovo.data.BleedEvent
+import com.f1forhelp.ovo.data.Cycle
 
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import com.f1forhelp.ovo.AppManager
 import java.time.ZoneId
 
 
 @Composable
-fun BleedEventList() {
+fun CycleList() {
     val context = LocalContext.current
-    val events = BleedEvent.getAll()
+    val cycles = Cycle.getAll()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(400.dp)  // adjust height as needed
             .border(3.dp, Color.Gray)
             .statusBarsPadding()
     ) {
-        items(events) { event ->
+        items(cycles) { cycle ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
                     .clickable {
-                        val string = event.asFormattedString(ZoneId.of("America/New_York"))
-                        BleedEvent.delete(event.epochMillis)
+                        val string = cycle.asFormattedString(ZoneId.of("America/New_York"))
+                        Cycle.delete(cycle.epochMillis)
                         AppManager.instance.popupMessage(context,"Deletion of $string successful")
                     },
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(event.asFormattedString(ZoneId.of("America/New_York")))
+                Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
             }
             HorizontalDivider()
         }
