@@ -32,14 +32,6 @@ fun AppNav() {
             MenuViewData(navController)
         }
         //endregion
-        //region ViewData
-        composable("bleedEventData") {
-            MenuBleedEventData(navController)
-        }
-        composable("cycleData") {
-            MenuCycleData(navController)
-        }
-        //endregion
 
 
         /*composable("settings") {

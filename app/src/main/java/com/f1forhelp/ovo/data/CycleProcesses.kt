@@ -21,11 +21,13 @@ object CycleProcesses {
     const val lutealPhaseLength = 14 // in days
 
     object settings {
-        var exclusionDeviationCap = 2 // how many standard deviations a value can be before capping amount of cycles.
+        var exclusionDeviationCap = 2.0 // how many median standard deviations a value can be before excluding data point.
         var inclusionCap = 24 // How many recent cycle lengths are included
+        var sanityFilterMinDays = 15
+        var sanityFilterMaxDays = 60
 
         // Weighted Settings
-        var useWeighted = true // do or don't use weighted calculation
+        var useWeighted = false // do or don't use weighted calculation
         var weightedInclusionCap = 48 // cap on included data before weighting
         var halfLife = 10.0 // the half-life on the importance of a cycle length as it goes from recent to old
 
@@ -86,8 +88,32 @@ object CycleProcesses {
                 break
             }
         }
-
         return Estimate(center, margin.toLong())
+    }
+
+    fun sanityFilter(lengths: List<Long>, minDays: Long = 15, maxDays: Long = 60): List<Long> {
+        return lengths.filter { it in minDays..maxDays }
+    }
+
+    // Outlier filter: iterative removal based on median ± k * MAD
+    fun outlierFilter(lengths: List<Long>, k: Double = 2.0): List<Long> {
+        if (lengths.isEmpty()) return lengths.toList()
+
+        var filtered = lengths.toMutableList()
+        var changed: Boolean
+
+        do {
+            changed = false
+            val estimate = computeEstimate(filtered) // returns Estimate(center, margin)
+            val lower = estimate.center - (k * estimate.margin).toLong()
+            val upper = estimate.center + (k * estimate.margin).toLong()
+
+            val beforeSize = filtered.size
+            filtered = filtered.filter { it in lower..upper }.toMutableList()
+            if (filtered.size < beforeSize) changed = true
+        } while (changed && filtered.isNotEmpty())
+
+        return filtered.toList()
     }
 
 

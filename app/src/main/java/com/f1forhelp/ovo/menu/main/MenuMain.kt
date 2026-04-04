@@ -1,6 +1,7 @@
 package com.f1forhelp.ovo.menu.main
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -54,7 +55,6 @@ fun MenuMain(navController: NavController) {
     val onRecord: (Long) -> Unit = { inputEpochMillis ->
         candidateEpochMillis = inputEpochMillis
         //dao.insert(BleedEvent(epochMillis = candidateEpochMillis))  // insert into DB immediately
-
         BleedEvent(epochMillis = candidateEpochMillis).save()
 
         // Create new cycle data
@@ -200,8 +200,8 @@ fun RecordEventWithConfirmation(
         } catch (e: DateTimeException) {
             null
         }
-
         candidateEpochMillis = epochMillis ?: 0L
+        showDialog = true
     }
 
     // Confirmation dialog

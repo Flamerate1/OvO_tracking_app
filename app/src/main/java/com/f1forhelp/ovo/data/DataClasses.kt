@@ -118,10 +118,32 @@ data class Cycle(
 
             //val bleedEvents = BleedEvent.getAll()
             val lengths = bleedEvents.toCycleLengths()
-            val validLengths = CycleProcesses.validLengths(lengths)
+
+            val sanityFiltered = CycleProcesses.sanityFilter(
+                lengths,
+                CycleProcesses.settings.sanityFilterMinDays.toMillisLong(),
+                CycleProcesses.settings.sanityFilterMaxDays.toMillisLong()
+                )
+            val outlierFiltered = CycleProcesses.outlierFilter(
+                sanityFiltered,
+                CycleProcesses.settings.exclusionDeviationCap
+            )
+            val validLengths = outlierFiltered
+
+
             val validCycleCount = validLengths.size
 
-            val estimate = CycleProcesses.computeEstimate(validLengths)
+            // Compute the median and mad estimate depending on weighted status.
+            val estimate: Estimate = if (CycleProcesses.settings.useWeighted) {
+                val inclusionCap = CycleProcesses.settings.weightedInclusionCap
+                val includedLengths = validLengths.takeLast(inclusionCap)
+                CycleProcesses.computeWeightedEstimate(includedLengths, CycleProcesses.settings.halfLife)
+            } else {
+                val inclusionCap = CycleProcesses.settings.inclusionCap
+                val includedLengths = validLengths.takeLast(inclusionCap)
+                CycleProcesses.computeEstimate(includedLengths)
+            }
+
 
             val startMs = bleedEvents[bleedEvents.size - 2].epochMillis
             val nextStartMs = bleedEvents[bleedEvents.size - 1].epochMillis
@@ -134,7 +156,7 @@ data class Cycle(
             val valid = CycleProcesses.isLengthValid(currentLength)
 
             val predictedNextStartMs = CycleProcesses.predictedNextStartMs(nextStartMs, estimate.center)
-            val predictedNextOvulationMs = CycleProcesses.predictedNextOvulationMs(predictedNextStartMs) // TODO calculate
+            val predictedNextOvulationMs = CycleProcesses.predictedNextOvulationMs(predictedNextStartMs)
 
             return Cycle(
                 predictionDateMs = predictionDateMs,
@@ -180,4 +202,20 @@ data class Cycle(
     fun asFormattedString(zone: ZoneId = ZoneId.systemDefault()): String {
         return this.asZonedDateTime(zone).toString()
     }
+
+    fun toViewableCycle(): ViewableCycle {
+        return ViewableCycle(
+            predictionDate="",
+            start="", nextStart="", length="",valid="",
+            medianLength="", madLength="", validCycleCount="",
+            predictedNextStart="", predictedNextOvulation=""
+        )
+    }
 }
+
+data class ViewableCycle(
+    val predictionDate: String,
+    val start: String, val nextStart: String, val length: String, val valid: String,
+    val medianLength: String, val madLength: String, val validCycleCount: String,
+    val predictedNextStart: String, val predictedNextOvulation: String
+)

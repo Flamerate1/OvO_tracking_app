@@ -3,6 +3,7 @@ package com.f1forhelp.ovo.menu
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,8 +11,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.f1forhelp.ovo.data.BleedEvent
 
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -29,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.f1forhelp.ovo.AppManager
 import com.f1forhelp.ovo.data.Cycle
+import com.f1forhelp.ovo.menu.main.MenuDialog
 import java.time.ZoneId
 
 
@@ -37,6 +43,10 @@ fun BleedEventList() {
     val context = LocalContext.current
 
     var events by remember { mutableStateOf(BleedEvent.getAll()) }
+
+    var candidateBleedEvent by remember { mutableStateOf(BleedEvent.empty) }
+    var showDeleteConfirmation by remember {mutableStateOf(false)}
+
 
     LazyColumn(
         modifier = Modifier
@@ -51,12 +61,8 @@ fun BleedEventList() {
                     .fillMaxWidth()
                     .padding(8.dp)
                     .clickable {
-                        val string = event.asFormattedString(ZoneId.of("America/New_York"))
-                        BleedEvent.delete(event.epochMillis)
-
-                        events = BleedEvent.getAll()
-
-                        AppManager.instance.popupMessage(context,"Deletion of $string successful")
+                        candidateBleedEvent = event
+                        showDeleteConfirmation = true
                     },
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -65,45 +71,81 @@ fun BleedEventList() {
             HorizontalDivider()
         }
     }
+
+    if (showDeleteConfirmation && candidateBleedEvent != Cycle.empty) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false; candidateBleedEvent = BleedEvent.empty},
+            title = { Text("Confirm Deletion") },
+            text = {
+                Text("Are you sure you'd like to delete bleed event  on ${candidateBleedEvent.asFormattedString()}?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val string = candidateBleedEvent.asFormattedString(ZoneId.of("America/New_York"))
+                    BleedEvent.delete(candidateBleedEvent.epochMillis)
+                    events = BleedEvent.getAll()
+                    AppManager.instance.popupMessage(context,"Deletion of $string successful")
+
+                    candidateBleedEvent = BleedEvent.empty
+                    showDeleteConfirmation = false
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false; candidateBleedEvent = BleedEvent.empty}) {
+                    Text("No")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 fun CycleList() {
     val context = LocalContext.current
-
     var cycles by remember { mutableStateOf(Cycle.getAll()) }
 
-    LazyColumn(
+    val horizontalScrollState = rememberScrollState()
+
+
+    var candidateCycle by remember { mutableStateOf(Cycle.empty) }
+    var showDeleteConfirmation by remember {mutableStateOf(false)}
+
+    Row(
         modifier = Modifier
+            .horizontalScroll(horizontalScrollState) // scroll the whole chart
             .fillMaxWidth()
-            .height(400.dp)
-            .border(3.dp, Color.Gray)
-            .statusBarsPadding()
     ) {
-        items(cycles) { cycle ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-                    .clickable {
-                        val string = cycle.asFormattedString(ZoneId.of("America/New_York"))
-                        Cycle.deleteByPredictionDateMs(cycle.predictionDateMs)
-
-                        cycles = Cycle.getAll()
-
-                        AppManager.instance.popupMessage(context,"Deletion of $string successful")
-                    },
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
+        // Give the LazyColumn a fixed width so dividers align properly
+        LazyColumn(
+            modifier = Modifier
+                .width(800.dp) // adjust to fit your widest row
+                .height(400.dp)
+                .border(3.dp, Color.Gray)
+                .statusBarsPadding()
+        ) {
+            items(cycles) { cycle ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth() // ensure the row uses full LazyColumn width
+                        .padding(8.dp)
+                        .clickable {
+                            candidateCycle = cycle
+                            showDeleteConfirmation = true
+                        },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
+                }
+                HorizontalDivider() // preserves the original light-gray line
             }
-            HorizontalDivider()
         }
     }
     Spacer(modifier = Modifier.height(16.dp))
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),         // take full width
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -112,10 +154,42 @@ fun CycleList() {
             onClick = {
                 Cycle.generateFromMostRecent()
                 cycles = Cycle.getAll()
-                Toast.makeText(context, "Bleed Events Successfully Imported", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Cycle Data Generated", Toast.LENGTH_SHORT).show()
             },
         ) {
             Text("Generate Cycle Data")
         }
+    }
+
+
+    if (showDeleteConfirmation && candidateCycle != Cycle.empty) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false; candidateCycle = Cycle.empty},
+            title = { Text("Confirm Deletion") },
+            text = {
+                Text("Are you sure you'd like to delete cycle  on ${candidateCycle.asFormattedString()}?")
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val string = candidateCycle.asFormattedString(ZoneId.of("America/New_York"))
+                    Cycle.deleteByPredictionDateMs(candidateCycle.predictionDateMs)
+                    cycles = Cycle.getAll()
+                    AppManager.instance.popupMessage(
+                        context,
+                        "Deletion of $string successful"
+                    )
+
+                    candidateCycle = Cycle.empty
+                    showDeleteConfirmation = false
+                }) {
+                    Text("Yes")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false; candidateCycle = Cycle.empty}) {
+                    Text("No")
+                }
+            }
+        )
     }
 }
