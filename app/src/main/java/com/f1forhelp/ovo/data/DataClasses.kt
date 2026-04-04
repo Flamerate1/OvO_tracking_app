@@ -116,13 +116,12 @@ data class Cycle(
         fun generateFromBleedEvents(bleedEvents: List<BleedEvent>): Cycle {
             val predictionDateMs = System.currentTimeMillis()
 
-            val bleedEvents = BleedEvent.getAll()
+            //val bleedEvents = BleedEvent.getAll()
             val lengths = bleedEvents.toCycleLengths()
             val validLengths = CycleProcesses.validLengths(lengths)
             val validCycleCount = validLengths.size
 
-            val median = CycleProcesses.median(validLengths)
-            val mad = CycleProcesses.mad(validLengths, median)
+            val estimate = CycleProcesses.computeEstimate(validLengths)
 
             val startMs = bleedEvents[bleedEvents.size - 2].epochMillis
             val nextStartMs = bleedEvents[bleedEvents.size - 1].epochMillis
@@ -134,7 +133,7 @@ data class Cycle(
 
             val valid = CycleProcesses.isLengthValid(currentLength)
 
-            val predictedNextStartMs = CycleProcesses.predictedNextStartMs(nextStartMs, median)
+            val predictedNextStartMs = CycleProcesses.predictedNextStartMs(nextStartMs, estimate.center)
             val predictedNextOvulationMs = CycleProcesses.predictedNextOvulationMs(predictedNextStartMs) // TODO calculate
 
             return Cycle(
@@ -144,8 +143,8 @@ data class Cycle(
                 length = currentLength,
                 valid = valid,
 
-                medianLength = median,
-                madLength = mad,
+                medianLength = estimate.center,
+                madLength = estimate.margin,
                 validCycleCount = validCycleCount,
 
                 predictedNextStartMs = predictedNextStartMs,
