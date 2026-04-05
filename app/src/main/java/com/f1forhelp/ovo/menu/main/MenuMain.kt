@@ -148,7 +148,7 @@ fun MenuDialog(
                     navController.navigate("backup")
                     onDismiss()
                 }) {
-                    Text("Backup Data")
+                    Text("Backups")
                 }
 
                 TextButton(onClick = {
@@ -156,6 +156,13 @@ fun MenuDialog(
                     onDismiss()
                 }) {
                     Text("View Data")
+                }
+
+                TextButton(onClick = {
+                    navController.navigate("viewData")
+                    onDismiss()
+                }) {
+                    Text("Calculation Settings")
                 }
             }
         },

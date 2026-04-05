@@ -30,14 +30,6 @@ fun MenuViewData(navController: NavController) {
             .statusBarsPadding()
     ) {
         TopButtons(navController)
-/*
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button( onClick = {navController.navigate("bleedEventData")} ) { Text("BleedEvent Data") }
-        Button( onClick = {navController.navigate("cycleData")} ) { Text("Cycle Data") }
-
-        Spacer(modifier = Modifier.height(32.dp))
-*/
         DataViewChoice()
     }
 

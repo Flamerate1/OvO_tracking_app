@@ -1,17 +1,36 @@
 package com.f1forhelp.ovo
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresPermission
 import com.f1forhelp.ovo.data.BleedEvent
 import com.f1forhelp.ovo.data.Cycle
 import com.f1forhelp.ovo.menu.AppNav
+import com.f1forhelp.ovo.notifications.scheduleCycleNotification
+import com.f1forhelp.ovo.notifications.showNotification
+
+import android.content.Context
 
 class MainActivity : ComponentActivity() {
+
+    private val CHANNEL_ID = "cycle_channel"
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+
+
+
+        //region App Stuff
         BleedEvent.initDb(this)
         Cycle.initDb(this)
 
@@ -26,14 +45,66 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-        /*val eventsFlow by dao.getAllFlow().collectAsState(initial = emptyList())
-        println("Bleed event: $eventsFlow}")
-        println(events[0])*/
+            /*val eventsFlow by dao.getAllFlow().collectAsState(initial = emptyList())
+            println("Bleed event: $eventsFlow}")
+            println(events[0])*/
 
-        AppNav()
+            AppNav()
 
-        //BleedEventList(events)
-        //MenuMain()
+            //BleedEventList(events)
+            //MenuMain()
+        }
+
+
+        //region Notification Stuff
+
+        createNotificationChannel()
+
+        Handler(Looper.getMainLooper()).postDelayed({
+            showNotification(this)
+        }, 5000)
+
+        requestNotificationPermission()
+
+        // Simulate prediction result (e.g., 5 days from now)
+        //val predictedStartMs = System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000L
+
+        //scheduleCycleNotification(this, 5)
+        //endregion
+    }
+    private fun createNotificationChannel() {
+        val name = "Cycle Notifications"
+        val descriptionText = "Notifications about predicted cycles"
+
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.deleteNotificationChannel(CHANNEL_ID) // remove old one
+
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = descriptionText
+            enableVibration(true)
+            vibrationPattern = longArrayOf(
+                0, 50,
+                50, 50,
+                50, 50,
+                50, 50,
+                50, 50,
+                50, 50,
+                50, 50,
+                50, 50
+            )
+        }
+
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                100
+            )
         }
     }
 }
