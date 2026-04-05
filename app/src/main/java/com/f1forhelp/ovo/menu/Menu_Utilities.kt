@@ -53,10 +53,14 @@ fun TopButtons(navController: NavController) {
 @Composable
 fun PredictionText() {
     val cycle = Cycle.getMostRecent()
+    if (cycle == Cycle.empty) {
+        Text("No prediction data exists yet.")
+        return
+    }
+
 
     val predictedNext = cycle.predictedNextStartMs
     val nowMs = System.currentTimeMillis()
-    //val msLeft = (predictedNext ?: 0L) - nowMs
     val msLeft = predictedNext - nowMs
 
     val daysLeft = msLeft.toDaysDouble()

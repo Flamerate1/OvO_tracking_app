@@ -30,6 +30,10 @@ fun Int.toOrdinal(): String {
 fun StatisticsDisplay(modifier: Modifier = Modifier) {
 
     val cycle = Cycle.getMostRecent()
+    if (cycle == Cycle.empty) {
+        EmptyCycle()
+        return
+    }
 
 
     val medianDays = cycle.medianLength.toDaysDouble()
@@ -59,5 +63,16 @@ fun StatisticsDisplay(modifier: Modifier = Modifier) {
         Text("Ovulation predicted for $predictedOvulationDateString")
         Spacer(modifier = Modifier.height(4.dp))
         Text("Next bleed event predicted for $predictedBleedEventDateString")
+    }
+}
+
+@Composable
+fun EmptyCycle() {
+    Column(modifier = Modifier.padding(10.dp)) {
+        Text("No prediction data exists yet.")
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("Please record your most recent event by inputting the date & time (if available) and then clicking the record button below")
+        //Spacer(modifier = Modifier.height(4.dp))
+        //Text("Next bleed event predicted for $predictedBleedEventDateString")
     }
 }

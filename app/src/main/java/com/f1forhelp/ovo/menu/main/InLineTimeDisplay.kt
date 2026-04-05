@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FiberManualRecord
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -30,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
@@ -58,10 +62,31 @@ fun InlineTimeDisplay(
         "CST" to "US/Central",
         "JST" to "Asia/Tokyo"
     )
-    var tzExpanded by remember { mutableStateOf(false) }
+    //var tzExpanded by remember { mutableStateOf(false) }
     var selectedShort by remember { mutableStateOf("EST") }
     var selectedFull by remember { mutableStateOf("US/Eastern") }
 
+    val dateValid by remember(month, day, hour, minute, selectedFull) {
+        derivedStateOf {
+            try {
+                ZonedDateTime.of(
+                    ZonedDateTime.now().year,
+                    month,
+                    day,
+                    hour,
+                    minute,
+                    0,
+                    0,
+                    ZoneId.of(selectedFull)
+                )
+                true
+            } catch (e: DateTimeException) {
+                false
+            }
+        }
+    }
+
+    val validColor = if (dateValid) Color.LightGray else Color(0xFFFFB3B3)
 
     fun updateToSystemTime() {
         val now = ZonedDateTime.now(ZoneId.of(timezone))
@@ -76,7 +101,7 @@ fun InlineTimeDisplay(
     Box(
         modifier = Modifier
             .padding(5.dp)
-            .background(Color.LightGray, shape = RoundedCornerShape(20.dp))
+            .background(validColor, shape = RoundedCornerShape(20.dp))
             .padding(10.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -93,19 +118,14 @@ fun InlineTimeDisplay(
 
                 // Day
                 StepperNumber(value = day, onValueChange = { day = it }, min = 1, max = 31)
-                Text(" / ", style = MaterialTheme.typography.bodyLarge)
+                Text("   ", style = MaterialTheme.typography.bodyLarge)
 
                 // Hour
                 StepperNumber(value = hour, onValueChange = { hour = it }, min = 0, max = 23)
                 Text(" : ", style = MaterialTheme.typography.bodyLarge)
 
                 // Minute
-                StepperNumber(
-                    value = minute,
-                    onValueChange = { minute = it },
-                    min = 0,
-                    max = 59
-                )
+                StepperNumber( value = minute, onValueChange = { minute = it }, min = 0, max = 59)
 
                 // Timezone dropdown
                 TimezoneDropdown(
@@ -120,18 +140,33 @@ fun InlineTimeDisplay(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                RecordEventWithConfirmation(
-                    month,
-                    day,
-                    hour,
-                    minute,
-                    selectedFull,
-                    onRecord,
-                    LocalContext.current
-                )
-
+                if (dateValid) {
+                    RecordEventWithConfirmation(
+                        month,
+                        day,
+                        hour,
+                        minute,
+                        selectedFull,
+                        onRecord,
+                        LocalContext.current
+                    )
+                } else {
+                    Button(
+                        onClick = {  },
+                        shape = CircleShape,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        modifier = Modifier.size(56.dp),
+                        contentPadding = PaddingValues(0.dp),
+                        enabled = false
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.FiberManualRecord,
+                            contentDescription = "Record",
+                            tint = Color.White // icon color
+                        )
+                    }
+                }
             } // end row
-
             Spacer(modifier=Modifier.size(5.dp))
         } // end column
     }
@@ -164,8 +199,9 @@ fun StepperNumber(value: Int, onValueChange: (Int) -> Unit, min: Int, max: Int) 
             contentPadding = PaddingValues(0.dp)
         ) { Text("▲") }
 
+        val formatted = String.format("%02d", value)
         // Number display
-        Text("$value", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(4.dp))
+        Text(formatted, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(4.dp))
 
         // Down button
         Button(
