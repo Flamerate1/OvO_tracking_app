@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FiberManualRecord
@@ -100,9 +101,11 @@ fun InlineTimeDisplay(
 
     Box(
         modifier = Modifier
-            .padding(horizontal=10.dp, vertical=15.dp)
-            .background(validColor, shape = RoundedCornerShape(56.dp))
-            .padding(10.dp),
+            .fillMaxWidth()
+            .padding(horizontal=5.dp, vertical=15.dp)
+            //.background(validColor, shape = RoundedCornerShape(56.dp))
+            .background(validColor, shape = RoundedCornerShape(CornerSize(percent = 100)))
+            .padding(vertical=10.dp, horizontal=20.dp),
         contentAlignment = Alignment.Center
     ) {
         Column{
@@ -118,7 +121,7 @@ fun InlineTimeDisplay(
 
                 // Day
                 StepperNumber(value = day, onValueChange = { day = it }, min = 1, max = 31)
-                Text("   ", style = MaterialTheme.typography.bodyLarge)
+                Text("  ", style = MaterialTheme.typography.bodyLarge)
 
                 // Hour
                 StepperNumber(value = hour, onValueChange = { hour = it }, min = 0, max = 23)
@@ -127,45 +130,52 @@ fun InlineTimeDisplay(
                 // Minute
                 StepperNumber( value = minute, onValueChange = { minute = it }, min = 0, max = 59)
 
-                // Timezone dropdown
-                TimezoneDropdown(
-                    timezones = tzList,
-                    selectedShort = selectedShort,
-                    onSelected = { short, full ->
-                        selectedShort = short
-                        selectedFull = full
-                        // Use selectedFull for ZonedDateTime computations
-                    }
-                )
 
-                Spacer(modifier = Modifier.width(4.dp))
+                Text("  ", style = MaterialTheme.typography.bodyLarge)
+                //Spacer(modifier = Modifier.width(4.dp))
 
-                if (dateValid) {
-                    RecordEventWithConfirmation(
-                        month,
-                        day,
-                        hour,
-                        minute,
-                        selectedFull,
-                        onRecord,
-                        LocalContext.current
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Timezone dropdown
+                    TimezoneDropdown(
+                        timezones = tzList,
+                        selectedShort = selectedShort,
+                        onSelected = { short, full ->
+                            selectedShort = short
+                            selectedFull = full
+                            // Use selectedFull for ZonedDateTime computations
+                        }
                     )
-                } else {
-                    Button(
-                        onClick = {  },
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                        modifier = Modifier.size(56.dp),
-                        contentPadding = PaddingValues(0.dp),
-                        enabled = false
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.FiberManualRecord,
-                            contentDescription = "Record",
-                            tint = Color.White // icon color
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    if (dateValid) {
+                        RecordEventWithConfirmation(
+                            month,
+                            day,
+                            hour,
+                            minute,
+                            selectedFull,
+                            onRecord,
+                            LocalContext.current
                         )
+                    } else {
+                        Button(
+                            onClick = {  },
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            modifier = Modifier.size(56.dp),
+                            contentPadding = PaddingValues(0.dp),
+                            enabled = false
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.FiberManualRecord,
+                                contentDescription = "Record",
+                                tint = Color.White // icon color
+                            )
+                        }
                     }
                 }
+
             } // end row
             Spacer(modifier=Modifier.size(5.dp))
         } // end column

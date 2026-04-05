@@ -29,11 +29,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // ENABLE to set navigation bar to black at the bottom.
+        // (actual set color happens below in setContent)
         WindowCompat.setDecorFitsSystemWindows(window, true)
-        
-        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            window.navigationBarColor = 0xFF000000.toInt() // opaque black
-        }*/
 
         //region App Stuff
         BleedEvent.initDb(this)
@@ -57,11 +55,6 @@ class MainActivity : ComponentActivity() {
 
         //region Notification Stuff
         createNotificationChannel()
-
-        /*Handler(Looper.getMainLooper()).postDelayed({
-            showNotification(this)
-        }, 5000)*/
-
         requestNotificationPermission()
 
         // Simulate prediction result (e.g., 5 days from now)
