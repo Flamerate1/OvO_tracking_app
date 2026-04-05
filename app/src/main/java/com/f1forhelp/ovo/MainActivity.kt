@@ -28,8 +28,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
 
-
-
         //region App Stuff
         BleedEvent.initDb(this)
         Cycle.initDb(this)
@@ -45,31 +43,23 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            /*val eventsFlow by dao.getAllFlow().collectAsState(initial = emptyList())
-            println("Bleed event: $eventsFlow}")
-            println(events[0])*/
-
             AppNav()
-
-            //BleedEventList(events)
-            //MenuMain()
         }
 
 
         //region Notification Stuff
-
         createNotificationChannel()
 
-        Handler(Looper.getMainLooper()).postDelayed({
+        /*Handler(Looper.getMainLooper()).postDelayed({
             showNotification(this)
-        }, 5000)
+        }, 5000)*/
 
         requestNotificationPermission()
 
         // Simulate prediction result (e.g., 5 days from now)
         //val predictedStartMs = System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000L
 
-        //scheduleCycleNotification(this, 5)
+        scheduleCycleNotification(this, 5)
         //endregion
     }
     private fun createNotificationChannel() {

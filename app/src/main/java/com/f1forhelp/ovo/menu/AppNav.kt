@@ -22,6 +22,9 @@ fun AppNav() {
         composable("notifications") {
             MenuNotifications(navController)
         }
+        composable("calculations") {
+            MenuCalculations(navController)
+        }
         composable("import") {
             MenuImport(navController)
         }

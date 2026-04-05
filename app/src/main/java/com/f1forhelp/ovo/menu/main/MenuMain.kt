@@ -98,7 +98,7 @@ fun MenuMain(navController: NavController) {
         }
 
         if (showMenu) {
-            MenuDialog(onDismiss = {showMenu = false}, navController)
+            SettingsDialogBox(onDismiss = {showMenu = false}, navController)
         }
 
         CalendarGrid()
@@ -118,61 +118,6 @@ fun MenuMain(navController: NavController) {
         // Is aligned with the bottom of the screen by default.
         InlineTimeDisplay(onRecord)
     }
-}
-
-@Composable
-fun MenuDialog(
-    onDismiss: () -> Unit,
-    navController: NavController
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Settings") },
-        text = {
-            Column {
-                TextButton(onClick = {
-                    navController.navigate("notifications")
-                    onDismiss()
-                }) {
-                    Text("Notifications")
-                }
-
-                TextButton(onClick = {
-                    navController.navigate("import")
-                    onDismiss()
-                }) {
-                    Text("Import Data")
-                }
-
-                TextButton(onClick = {
-                    navController.navigate("backup")
-                    onDismiss()
-                }) {
-                    Text("Backups")
-                }
-
-                TextButton(onClick = {
-                    navController.navigate("viewData")
-                    onDismiss()
-                }) {
-                    Text("View Data")
-                }
-
-                TextButton(onClick = {
-                    navController.navigate("viewData")
-                    onDismiss()
-                }) {
-                    Text("Calculation Settings")
-                }
-            }
-        },
-        confirmButton = {}, // not needed
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Close")
-            }
-        }
-    )
 }
 
 @Composable

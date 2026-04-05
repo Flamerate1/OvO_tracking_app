@@ -34,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.f1forhelp.ovo.AppManager
 import com.f1forhelp.ovo.data.Cycle
-import com.f1forhelp.ovo.menu.main.MenuDialog
 import java.time.ZoneId
 
 
