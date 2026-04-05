@@ -100,8 +100,8 @@ fun InlineTimeDisplay(
 
     Box(
         modifier = Modifier
-            .padding(5.dp)
-            .background(validColor, shape = RoundedCornerShape(20.dp))
+            .padding(horizontal=10.dp, vertical=15.dp)
+            .background(validColor, shape = RoundedCornerShape(56.dp))
             .padding(10.dp),
         contentAlignment = Alignment.Center
     ) {

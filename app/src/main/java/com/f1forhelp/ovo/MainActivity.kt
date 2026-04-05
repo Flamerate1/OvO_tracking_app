@@ -18,6 +18,8 @@ import com.f1forhelp.ovo.notifications.scheduleCycleNotification
 import com.f1forhelp.ovo.notifications.showNotification
 
 import android.content.Context
+import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
 
 class MainActivity : ComponentActivity() {
 
@@ -27,6 +29,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+        
+        /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.navigationBarColor = 0xFF000000.toInt() // opaque black
+        }*/
 
         //region App Stuff
         BleedEvent.initDb(this)
@@ -43,6 +50,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            SetNavigationBarColor(color = Color.Black, darkIcons = false)
             AppNav()
         }
 
@@ -86,7 +94,7 @@ class MainActivity : ComponentActivity() {
         }
 
         val notificationManager: NotificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
     }
     private fun requestNotificationPermission() {

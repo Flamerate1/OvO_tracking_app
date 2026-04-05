@@ -28,6 +28,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -75,8 +76,9 @@ fun MenuMain(navController: NavController) {
         var showMenu by remember { mutableStateOf(false) }
 
         Row(modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp)
+                .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(28.dp)),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -97,6 +99,9 @@ fun MenuMain(navController: NavController) {
             }
         }
 
+        //Spacer(modifier=Modifier.size(4.dp))
+        //HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 4.dp, color = Color.Black)
+
         if (showMenu) {
             SettingsDialogBox(onDismiss = {showMenu = false}, navController)
         }
@@ -106,7 +111,7 @@ fun MenuMain(navController: NavController) {
         Box(modifier=Modifier
             .weight(1f)
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(horizontal=15.dp)
             .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(10.dp))
             .border(3.dp, Color.Black, shape = RoundedCornerShape(10.dp))
             .padding(10.dp)
