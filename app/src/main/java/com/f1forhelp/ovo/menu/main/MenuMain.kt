@@ -45,6 +45,7 @@ import androidx.navigation.NavController
 import com.f1forhelp.ovo.data.BleedEvent
 import com.f1forhelp.ovo.data.Cycle
 import com.f1forhelp.ovo.menu.PredictionText
+import com.f1forhelp.ovo.menu.TopButtons
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -75,35 +76,13 @@ fun MenuMain(navController: NavController) {
     ) {
         var showMenu by remember { mutableStateOf(false) }
 
-        Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp)
-                .background(Color(0xFFE0E0E0), shape = RoundedCornerShape(28.dp)),
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            PredictionText()
+        TopButtons(navController,Icons.Default.Settings, onClick = { showMenu=true })
 
-            Spacer(modifier=Modifier.size(10.dp))
-
-            Button(
-                onClick = { showMenu = true },
-                shape = CircleShape,
-                modifier = Modifier.size(56.dp),
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings, // gear icon
-                    contentDescription = "Settings"
-                )
-            }
-        }
-
-        //Spacer(modifier=Modifier.size(4.dp))
-        //HorizontalDivider(modifier = Modifier.fillMaxWidth(), thickness = 4.dp, color = Color.Black)
 
         if (showMenu) {
             SettingsDialogBox(onDismiss = {showMenu = false}, navController)
+        } else {
+            Spacer(modifier = Modifier.height(1.dp)) // ensures column isn't empty
         }
 
         CalendarGrid()
