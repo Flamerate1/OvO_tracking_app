@@ -86,6 +86,7 @@ data class BleedEvent(
 data class Cycle(
     @PrimaryKey
     val predictionDateMs: Long = 0L,
+
     val startMs: Long = 0L,
     val nextStartMs: Long = 0L,
     val length: Long = 0L,
@@ -94,6 +95,11 @@ data class Cycle(
     val medianLength: Long = 0L,
     val madLength: Long = 0L,
     val validCycleCount: Int = 0,
+
+    //val fromPreviousPredictionError: Long = 0L, // = previousCycle.predictedNextStart - nextStartMs
+    //val absError: Long = 0L, // = abs(fromPreviousPredictionError)
+    //val normalizedError: Long = 0L, // = absError / madLength
+    //val tilNowAvgNormalizedError: Long = 0L, // = average(normalizedError of all cycles)
 
     val predictedNextStartMs: Long = 0L,
     val predictedNextOvulationMs: Long = 0L
@@ -127,21 +133,6 @@ data class Cycle(
                 lengths -> sanityFiltered -> outlierFiltered -> validLengths
             */
 
-            /*
-            val sanityFiltered = CycleProcesses.sanityFilter(
-                lengths,
-                CalculationSettings.sanityFilterMinDays.intValue.toMillisLong(),
-                CalculationSettings.sanityFilterMaxDays.intValue.toMillisLong()
-                )
-
-            val outlierFiltered = CycleProcesses.outlierFilter(
-                sanityFiltered,
-                CalculationSettings.exclusionDeviationCap.doubleValue
-            )
-
-            val validLengths = outlierFiltered
-             */
-
             var validLengths = lengths
             if (CalculationSettings.useSanityFilter.value) validLengths = CycleProcesses.sanityFilter(
                 lengths,
@@ -156,7 +147,6 @@ data class Cycle(
 
             // Compute the median and mad estimate depending on weighted status.
             val estimate: Estimate = if (CalculationSettings.useWeighted.value) {
-
                 val inclusionCap = CalculationSettings.weightedInclusionCap.intValue
                 val includedLengths = validLengths.takeLast(inclusionCap)
                 Log.d("calculations",includedLengths.size.toString())
@@ -230,13 +220,16 @@ data class Cycle(
     fun toViewableCycle(): ViewableCycle {
         return ViewableCycle(
             predictionDate = predictionDateMs.toFormattedDate(),
+
             start = startMs.toFormattedDate(),
             nextStart = nextStartMs.toFormattedDate(),
             length = length.toDayString(),
             valid = valid.toString(),
+
             medianLength = medianLength.toDayString(),
             madLength = madLength.toDayString(),
             validCycleCount = validCycleCount.toString(),
+
             predictedNextStart = predictedNextStartMs.toFormattedDate(),
             predictedNextOvulation = predictedNextOvulationMs.toFormattedDate()
         )
