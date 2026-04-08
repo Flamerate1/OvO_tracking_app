@@ -1,14 +1,15 @@
 package com.f1forhelp.ovo.data
 
+import android.util.Log
 import kotlin.math.exp
 import kotlin.math.abs
 import kotlin.math.ln
 
 fun Long.toDaysDouble(): Double {
-    return this / CycleProcesses.dayLengthMillis
+    return this / CycleProcesses.DAY_LENGTH_MILLIS
 }
 fun Int.toMillisLong(): Long {
-    return (this * CycleProcesses.dayLengthMillis).toLong()
+    return (this * CycleProcesses.DAY_LENGTH_MILLIS).toLong()
 }
 
 data class Estimate(
@@ -17,24 +18,12 @@ data class Estimate(
 )
 
 object CycleProcesses {
-    const val dayLengthMillis = 24 * 60 * 60 * 1000.0 // cast as Long for convenience
-    const val lutealPhaseLength = 14 // in days
-
-    object settings {
-        var exclusionDeviationCap = 2.0 // how many median standard deviations a value can be before excluding data point.
-        var inclusionCap = 24 // How many recent cycle lengths are included
-        var sanityFilterMinDays = 15
-        var sanityFilterMaxDays = 60
-
-        // Weighted Settings
-        var useWeighted = false // do or don't use weighted calculation
-        var weightedInclusionCap = 48 // cap on included data before weighting
-        var halfLife = 10.0 // the half-life on the importance of a cycle length as it goes from recent to old
-
-    }
+    const val DAY_LENGTH_MILLIS = 24 * 60 * 60 * 1000.0 // cast as Long for convenience
+    const val LUTEAL_PHASE_LENGTH = 14 // in days
 
     fun computeEstimate(lengths: List<Long>): Estimate {
         require(lengths.isNotEmpty()) { "Cycle list cannot be empty" }
+        Log.d("calculations","Doing a NON-weighted computation!")
 
         // Center: median
         val sorted = lengths.sorted()
@@ -53,11 +42,13 @@ object CycleProcesses {
             deviations[deviations.size / 2]
         }
 
+        Log.d("calculations","$margin")
         return Estimate(center, margin)
     }
 
     fun computeWeightedEstimate(lengths: List<Long>, halfLife: Double = 10.0): Estimate {
         require(lengths.isNotEmpty()) { "Cycle list cannot be empty" }
+        Log.d("calculations","Doing a WEIGHTED computation!")
 
         val lambda = ln(2.0) / halfLife
         val n = lengths.size
@@ -88,6 +79,8 @@ object CycleProcesses {
                 break
             }
         }
+
+        Log.d("calculations","$margin")
         return Estimate(center, margin.toLong())
     }
 
@@ -104,7 +97,7 @@ object CycleProcesses {
 
         do {
             changed = false
-            val estimate = computeEstimate(filtered) // returns Estimate(center, margin)
+            val estimate = computeEstimate(filtered) // USE UN-WEIGHTED!!!
             val lower = estimate.center - (k * estimate.margin).toLong()
             val upper = estimate.center + (k * estimate.margin).toLong()
 
@@ -128,7 +121,7 @@ object CycleProcesses {
         return recentStartMs + median
     }
     fun predictedNextOvulationMs(predictedNextOvulationMs: Long): Long {
-        return predictedNextOvulationMs - lutealPhaseLength.toMillisLong()
+        return predictedNextOvulationMs - LUTEAL_PHASE_LENGTH.toMillisLong()
     }
 
 

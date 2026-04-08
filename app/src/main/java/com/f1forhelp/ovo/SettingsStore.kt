@@ -5,12 +5,18 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.core.content.edit
+import com.f1forhelp.ovo.SettingsStore.NotificationSettings.enabled
+import com.f1forhelp.ovo.SettingsStore.NotificationSettings.notifications
+import com.f1forhelp.ovo.SettingsStore.NotificationSettings.scheduledNotifications
+import com.f1forhelp.ovo.SettingsStore.NotificationSettings.windowEnd
+import com.f1forhelp.ovo.SettingsStore.NotificationSettings.windowStart
 import com.f1forhelp.ovo.notifications.NotificationService
 
 data class NotificationObject(
@@ -122,8 +128,72 @@ object SettingsStore {
         }
     }
     object CalculationSettings {
-        fun save() {}
-        fun load() {}
+        var inclusionCap = mutableIntStateOf(24) // How many recent cycle lengths are included
+        var useSanityFilter = mutableStateOf(true)
+        var sanityFilterMinDays = mutableIntStateOf(15)
+        var sanityFilterMaxDays = mutableIntStateOf(60)
+        var useOutlierFilter = mutableStateOf(true)
+        var exclusionDeviationCap = mutableDoubleStateOf(2.0) // how many median standard deviations a value can be before excluding data point.
+
+
+        // Weighted Settings
+        var useWeighted = mutableStateOf(true) // do or don't use weighted calculation
+        var weightedInclusionCap = mutableIntStateOf(48) // cap on included data before weighting
+        var halfLife = mutableDoubleStateOf(10.0) // the half-life on the importance of a cycle length as it goes from recent to old
+
+        fun edit(
+            inclusionCap: Int = CalculationSettings.inclusionCap.intValue,
+            useSanityFilter: Boolean = CalculationSettings.useSanityFilter.value,
+            sanityFilterMinDays: Int = CalculationSettings.sanityFilterMinDays.intValue,
+            sanityFilterMaxDays: Int = CalculationSettings.sanityFilterMaxDays.intValue,
+            useOutlierFilter: Boolean = CalculationSettings.useOutlierFilter.value,
+            exclusionDeviationCap: Double = CalculationSettings.exclusionDeviationCap.doubleValue,
+
+            useWeighted: Boolean = CalculationSettings.useWeighted.value,
+            weightedInclusionCap: Int = CalculationSettings.weightedInclusionCap.intValue,
+            halfLife: Double = CalculationSettings.halfLife.doubleValue
+        ) {
+            this.inclusionCap.intValue = inclusionCap
+            this.useSanityFilter.value = useSanityFilter
+            this.sanityFilterMinDays.intValue = sanityFilterMinDays
+            this.sanityFilterMaxDays.intValue = sanityFilterMaxDays
+            this.useOutlierFilter.value = useOutlierFilter
+            this.exclusionDeviationCap.doubleValue = exclusionDeviationCap
+
+            this.useWeighted.value = useWeighted
+            this.weightedInclusionCap.intValue = weightedInclusionCap
+            this.halfLife.doubleValue = halfLife
+
+            this.save()
+        }
+        fun save() {
+            prefs.edit {
+                putInt("inclusionCap", inclusionCap.intValue)
+                putBoolean("useSanityFilter", useSanityFilter.value)
+                putInt("sanityFilterMinDays", sanityFilterMinDays.intValue)
+                putInt("sanityFilterMaxDays", sanityFilterMaxDays.intValue)
+                putBoolean("useOutlierFilter", useOutlierFilter.value)
+                putFloat("exclusionDeviationCap", exclusionDeviationCap.doubleValue.toFloat())
+
+                putBoolean("useWeighted", useWeighted.value)
+                putInt("weightedInclusionCap", weightedInclusionCap.intValue)
+                putFloat("halfLife", halfLife.doubleValue.toFloat())
+            }
+        }
+        fun load() {
+            with (CalculationSettings) {
+                inclusionCap.intValue = prefs.getInt("inclusionCap", 24)
+                useSanityFilter.value = prefs.getBoolean("useSanityFilter", true)
+                sanityFilterMinDays.intValue = prefs.getInt("sanityFilterMinDays", 15)
+                sanityFilterMaxDays.intValue = prefs.getInt("sanityFilterMaxDays", 60)
+                useOutlierFilter.value = prefs.getBoolean("useOutlierFilter", true)
+                exclusionDeviationCap.doubleValue = prefs.getFloat("exclusionDeviationCap", 2F).toDouble()
+
+                useWeighted.value = prefs.getBoolean("useWeighted", true)
+                weightedInclusionCap.intValue = prefs.getInt("weightedInclusionCap", 48)
+                halfLife.doubleValue = prefs.getFloat("halfLife", 10F).toDouble()
+            }
+        }
     }
 
     fun init(context: Context) {

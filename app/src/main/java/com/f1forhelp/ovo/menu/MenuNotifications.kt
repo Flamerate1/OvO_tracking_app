@@ -76,7 +76,8 @@ fun MenuNotifications(navController: NavController) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Button(
                     modifier=Modifier.fillMaxWidth(),
-                    onClick = { NotificationService.scheduleAllNotifications(context) }) {Text("Reset Scheduled Notifications")}
+                    onClick = { NotificationService.scheduleAllNotifications(context) }) {Text("Reset Scheduled Notifications")
+                }
             }
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -27,6 +27,7 @@ import com.f1forhelp.ovo.data.BleedEvent
 
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -35,6 +36,8 @@ import androidx.compose.ui.Alignment
 import com.f1forhelp.ovo.AppManager
 import com.f1forhelp.ovo.data.Cycle
 import java.time.ZoneId
+
+import androidx.compose.foundation.background
 
 
 @Composable
@@ -116,8 +119,65 @@ fun CycleList() {
             .horizontalScroll(horizontalScrollState) // scroll the whole chart
             .fillMaxWidth()
     ) {
-        // Give the LazyColumn a fixed width so dividers align properly
         LazyColumn(
+            modifier = Modifier
+                .width(1500.dp)
+                .height(400.dp)
+                .border(3.dp, Color.Gray)
+                .statusBarsPadding()
+        ) {
+            // Header row
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.LightGray)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Calc. Date", modifier = Modifier.weight(1f))
+                    Text("Start", modifier = Modifier.weight(1f))
+                    Text("Next Start", modifier = Modifier.weight(1f))
+                    Text("Length (Days)", modifier = Modifier.weight(1f))
+                    Text("Valid", modifier = Modifier.weight(1f))
+                    Text("Median (Days)", modifier = Modifier.weight(1f))
+                    Text("MAD (Days)", modifier = Modifier.weight(1f))
+                    Text("Count", modifier = Modifier.weight(1f))
+                    Text("Pred. Next", modifier = Modifier.weight(1f))
+                    Text("Pred. Ovulation", modifier = Modifier.weight(1f))
+                }
+                HorizontalDivider()
+            }
+
+            // Data rows
+            items(cycles) { cycle ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable {
+                            candidateCycle = cycle
+                            showDeleteConfirmation = true
+                        },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val v = cycle.toViewableCycle()
+                    Text(v.predictionDate, modifier = Modifier.weight(1f))
+                    Text(v.start, modifier = Modifier.weight(1f))
+                    Text(v.nextStart, modifier = Modifier.weight(1f))
+                    Text(v.length, modifier = Modifier.weight(1f))
+                    Text(v.valid, modifier = Modifier.weight(1f))
+                    Text(v.medianLength, modifier = Modifier.weight(1f))
+                    Text(v.madLength, modifier = Modifier.weight(1f))
+                    Text(v.validCycleCount, modifier = Modifier.weight(1f))
+                    Text(v.predictedNextStart, modifier = Modifier.weight(1f))
+                    Text(v.predictedNextOvulation, modifier = Modifier.weight(1f))
+                }
+                HorizontalDivider()
+            }
+        }
+
+        /*LazyColumn(
             modifier = Modifier
                 .width(800.dp) // adjust to fit your widest row
                 .height(400.dp)
@@ -136,15 +196,23 @@ fun CycleList() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
+                    VerticalDivider()
+                    Text("Hi some text")
+                    VerticalDivider()
+                    Text("Hi some more text")
+                    VerticalDivider()
+                    Text("Even more text")
                 }
-                HorizontalDivider() // preserves the original light-gray line
+                HorizontalDivider()
             }
-        }
+        }*/
     }
     Spacer(modifier = Modifier.height(16.dp))
 
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

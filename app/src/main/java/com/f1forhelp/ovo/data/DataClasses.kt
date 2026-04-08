@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.f1forhelp.ovo.AppDatabase
+import com.f1forhelp.ovo.SettingsStore
+import com.f1forhelp.ovo.SettingsStore.CalculationSettings
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -116,31 +118,53 @@ data class Cycle(
         fun generateFromBleedEvents(bleedEvents: List<BleedEvent>): Cycle {
             val predictionDateMs = System.currentTimeMillis()
 
-            //val bleedEvents = BleedEvent.getAll()
             val lengths = bleedEvents.toCycleLengths()
 
+            Log.d("calculations",CalculationSettings.toString())
+
+            /*
+                Step 1 filtering process timeline:
+                lengths -> sanityFiltered -> outlierFiltered -> validLengths
+            */
+
+            /*
             val sanityFiltered = CycleProcesses.sanityFilter(
                 lengths,
-                CycleProcesses.settings.sanityFilterMinDays.toMillisLong(),
-                CycleProcesses.settings.sanityFilterMaxDays.toMillisLong()
+                CalculationSettings.sanityFilterMinDays.intValue.toMillisLong(),
+                CalculationSettings.sanityFilterMaxDays.intValue.toMillisLong()
                 )
+
             val outlierFiltered = CycleProcesses.outlierFilter(
                 sanityFiltered,
-                CycleProcesses.settings.exclusionDeviationCap
+                CalculationSettings.exclusionDeviationCap.doubleValue
             )
+
             val validLengths = outlierFiltered
+             */
 
-
+            var validLengths = lengths
+            if (CalculationSettings.useSanityFilter.value) validLengths = CycleProcesses.sanityFilter(
+                lengths,
+                CalculationSettings.sanityFilterMinDays.intValue.toMillisLong(),
+                CalculationSettings.sanityFilterMaxDays.intValue.toMillisLong()
+            )
+            if (CalculationSettings.useOutlierFilter.value) validLengths = CycleProcesses.outlierFilter(
+                validLengths,
+                CalculationSettings.exclusionDeviationCap.doubleValue
+            )
             val validCycleCount = validLengths.size
 
             // Compute the median and mad estimate depending on weighted status.
-            val estimate: Estimate = if (CycleProcesses.settings.useWeighted) {
-                val inclusionCap = CycleProcesses.settings.weightedInclusionCap
+            val estimate: Estimate = if (CalculationSettings.useWeighted.value) {
+
+                val inclusionCap = CalculationSettings.weightedInclusionCap.intValue
                 val includedLengths = validLengths.takeLast(inclusionCap)
-                CycleProcesses.computeWeightedEstimate(includedLengths, CycleProcesses.settings.halfLife)
+                Log.d("calculations",includedLengths.size.toString())
+                CycleProcesses.computeWeightedEstimate(includedLengths, CalculationSettings.halfLife.doubleValue)
             } else {
-                val inclusionCap = CycleProcesses.settings.inclusionCap
+                val inclusionCap = CalculationSettings.inclusionCap.intValue
                 val includedLengths = validLengths.takeLast(inclusionCap)
+                Log.d("calculations",includedLengths.size.toString())
                 CycleProcesses.computeEstimate(includedLengths)
             }
 
@@ -205,12 +229,29 @@ data class Cycle(
 
     fun toViewableCycle(): ViewableCycle {
         return ViewableCycle(
-            predictionDate="",
-            start="", nextStart="", length="",valid="",
-            medianLength="", madLength="", validCycleCount="",
-            predictedNextStart="", predictedNextOvulation=""
+            predictionDate = predictionDateMs.toFormattedDate(),
+            start = startMs.toFormattedDate(),
+            nextStart = nextStartMs.toFormattedDate(),
+            length = length.toDayString(),
+            valid = valid.toString(),
+            medianLength = medianLength.toDayString(),
+            madLength = madLength.toDayString(),
+            validCycleCount = validCycleCount.toString(),
+            predictedNextStart = predictedNextStartMs.toFormattedDate(),
+            predictedNextOvulation = predictedNextOvulationMs.toFormattedDate()
         )
     }
+}
+
+fun Long.toDayString(): String {
+    val days = this.toDouble() / (1000 * 60 * 60 * 24)
+    return String.format("%.1f", days)
+}
+
+fun Long.toFormattedDate(zone: ZoneId = ZoneId.of("America/New_York")): String {
+    val instant = Instant.ofEpochMilli(this)
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(zone)
+    return formatter.format(instant)
 }
 
 data class ViewableCycle(
