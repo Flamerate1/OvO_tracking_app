@@ -5,7 +5,7 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-
+/*
 class CycleNotificationWorker(
     context: Context,
     params: WorkerParameters
@@ -16,4 +16,4 @@ class CycleNotificationWorker(
         showNotification(applicationContext)
         return Result.success()
     }
-}
+}*/

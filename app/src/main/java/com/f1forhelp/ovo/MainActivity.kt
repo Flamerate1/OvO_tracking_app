@@ -14,16 +14,22 @@ import androidx.annotation.RequiresPermission
 import com.f1forhelp.ovo.data.BleedEvent
 import com.f1forhelp.ovo.data.Cycle
 import com.f1forhelp.ovo.menu.AppNav
-import com.f1forhelp.ovo.notifications.scheduleCycleNotification
-import com.f1forhelp.ovo.notifications.showNotification
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
+import androidx.work.await
+import com.f1forhelp.ovo.notifications.NotificationService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-    private val CHANNEL_ID = "cycle_channel"
+    //private val CHANNEL_ID = "cycle_channel"
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,16 +62,18 @@ class MainActivity : ComponentActivity() {
 
 
         //region Notification Stuff
-        createNotificationChannel()
+        //NotificationService.createNotificationChannel(this)
+        NotificationService.init(this)
         requestNotificationPermission()
+
 
         // Simulate prediction result (e.g., 5 days from now)
         //val predictedStartMs = System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000L
 
-        scheduleCycleNotification(this, 5)
+        //ScheduleCycleNotification(this, 5)
         //endregion
     }
-    private fun createNotificationChannel() {
+    /*private fun createNotificationChannel() {
         val name = "Cycle Notifications"
         val descriptionText = "Notifications about predicted cycles"
 
@@ -91,7 +99,7 @@ class MainActivity : ComponentActivity() {
         val notificationManager: NotificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
-    }
+    }*/
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(

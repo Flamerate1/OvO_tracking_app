@@ -1,14 +1,17 @@
 package com.f1forhelp.ovo
 
+import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.annotation.RequiresPermission
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import androidx.core.content.edit
+import com.f1forhelp.ovo.notifications.NotificationService
 
 data class NotificationObject(
     val name: String, // Custom name if desired
@@ -53,6 +56,9 @@ object SettingsStore {
         var windowStart = mutableIntStateOf(0)
         var windowEnd = mutableIntStateOf(0)
         val notifications = mutableStateListOf<NotificationObject>()
+        var scheduledNotifications:Set<String> = emptySet()
+        fun updateScheduledNotifications(set: Set<String>) { scheduledNotifications = set; save() }
+
 
         fun add(newNotification: NotificationObject) {
             notifications.add(newNotification)
@@ -62,23 +68,31 @@ object SettingsStore {
             //val index = notifications.indexOf(oldNotification)
             val index = notifications.indexOfFirst { it === oldNotification }
             if (index != -1) notifications[index] = newNotification
+            save()
         }
         fun update(
-                oldNotification: NotificationObject,
-                name: String = oldNotification.name,
-                enabled: Boolean = oldNotification.enabled,
-                type: NotificationType = oldNotification.type,
-                value: Double = oldNotification.value
+                old: NotificationObject,
+                name: String = old.name,
+                enabled: Boolean = old.enabled,
+                type: NotificationType = old.type,
+                value: Double = old.value
         ) {
-            update(oldNotification, NotificationObject(name, enabled, type, value))
+            update(old, NotificationObject(name, enabled, type, value))
         }
         fun remove(oldNotification: NotificationObject) {
             //notifications.remove(oldNotification)
             notifications.removeAll { it === oldNotification }
+            save()
         }
-        fun setEnabled(isEnabled: Boolean) {
+        //@RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+        fun setEnabled(context: Context, isEnabled: Boolean) {
             enabled.value = isEnabled
-            // TODO Update existing notifications to cease existing
+            if (isEnabled) {
+                NotificationService.scheduleAllNotifications(context)
+            } else {
+                NotificationService.clearAllNotifications(context)
+            }
+
             save()
         }
         fun save() {
@@ -88,6 +102,7 @@ object SettingsStore {
                 putBoolean("enabled", enabled.value)
                 putInt("windowStart", windowStart.intValue)
                 putInt("windowEnd", windowEnd.intValue)
+                putStringSet("scheduledNotifications", scheduledNotifications)
             }
         }
         fun load() {
@@ -101,6 +116,8 @@ object SettingsStore {
                 enabled.value = prefs.getBoolean("enabled", false)
                 windowStart.intValue = prefs.getInt("windowStart", 0)
                 windowEnd.intValue = prefs.getInt("windowEnd", 0)
+
+                scheduledNotifications = prefs.getStringSet("scheduledNotifications", emptySet()) ?: emptySet()
             }
         }
     }

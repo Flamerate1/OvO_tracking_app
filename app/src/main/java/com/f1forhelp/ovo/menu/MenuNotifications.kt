@@ -46,6 +46,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.core.graphics.ColorUtils
 import com.f1forhelp.ovo.NotificationObject
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun MenuNotifications(navController: NavController) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -72,7 +74,13 @@ fun MenuNotifications(navController: NavController) {
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Enable Notifications", modifier = Modifier.weight(1f))
-                Switch(checked = NotificationSettings.enabled.value, onCheckedChange = { NotificationSettings.setEnabled(it) })
+                Button(onClick = {}) {Text("Reset Scheduled Notifications")}
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Enable Notifications", modifier = Modifier.weight(1f))
+                Switch(checked = NotificationSettings.enabled.value, onCheckedChange = { NotificationSettings.setEnabled(context, it) })
             }
             Spacer(modifier = Modifier.height(16.dp))
 

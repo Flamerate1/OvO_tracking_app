@@ -6,6 +6,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
+/*
 @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
 fun showNotification(context: Context) {
     val notification = NotificationCompat.Builder(context, "cycle_channel")
@@ -18,3 +19,4 @@ fun showNotification(context: Context) {
 
     NotificationManagerCompat.from(context).notify(1, notification)
 }
+*/
