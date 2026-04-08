@@ -19,13 +19,15 @@ import com.f1forhelp.ovo.SettingsStore.GeneralSettings
 
 @Composable
 fun TimezoneDropdown(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Box(modifier = modifier) {
         Button(
             onClick = { expanded = !expanded },
+            enabled = enabled,
             contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp) // reduces padding
         ) {
             Text(GeneralSettings.chosenTzShort, fontFamily = FontFamily.Monospace)
@@ -40,6 +42,7 @@ fun TimezoneDropdown(
                     text = { Text(full) }, // show full name in the menu
                     onClick = {
                         GeneralSettings.chosenTimeZone.intValue = index
+                        GeneralSettings.save()
                         expanded = false
                     }
                 )
