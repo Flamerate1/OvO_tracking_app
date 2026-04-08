@@ -27,6 +27,7 @@ import com.f1forhelp.ovo.data.Cycle
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 object NotificationService {
@@ -53,7 +54,7 @@ object NotificationService {
         NotificationSettings.updateScheduledNotifications(toSchedule.toSet())
 
         // Double check!!
-        checkScheduledNotifications(context, NotificationSettings.scheduledNotifications)
+        checkScheduledNotifications(context, NotificationSettings.scheduledNotifications, true)
     }
 
     fun clearAllNotifications(context: Context) {
@@ -73,6 +74,7 @@ object NotificationService {
             NotificationType.DAY_OF -> nextStartMs
             NotificationType.MAD ->  nextStartMs - (notificationObject.value * cycle.madLength).toLong()
             NotificationType.DAYS -> nextStartMs - (notificationObject.value * 24 * 60 * 60 * 1000).toLong()
+            NotificationType.OVO_DAY -> cycle.predictedNextOvulationMs
         }
         val now = System.currentTimeMillis()
         val delay: Long = notifyTime - now
@@ -99,18 +101,6 @@ object NotificationService {
         )
     }
 
-    /*@RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    fun showNotification(context: Context) {
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Cycle Reminder")
-            .setContentText("Your predicted cycle is approaching")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
-
-        NotificationManagerCompat.from(context).notify(1, notification)
-    }*/
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     fun showNotification(context: Context, uniqueName: String) {
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -164,9 +154,9 @@ object NotificationService {
         notificationManager.createNotificationChannel(channel)
     }
 
-    fun checkScheduledNotifications(context: Context, notificationIds: Set<String>) {
+    fun checkScheduledNotifications(context: Context, notificationIds: Set<String>, givePopup: Boolean = false) {
         Log.d("notifications", "NotificationIds: $notificationIds.toString()")
-        //notificationIds.forEach {Log.d("notifications",it)}
+
         // Launch a coroutine on the IO dispatcher (background thread)
         CoroutineScope(Dispatchers.IO).launch {
             val scheduled = mutableListOf<String>()
@@ -185,6 +175,12 @@ object NotificationService {
 
             // Log results or update your app state
             Log.d("Startup", "Scheduled notifications on startup: $scheduled")
+            if (givePopup) {
+                // Switch to Main thread for UI
+                withContext(Dispatchers.Main) {
+                    AppManager.instance.popupMessage(context,"$scheduled")
+                }
+            }
         }
     }
     //endregion
@@ -201,14 +197,3 @@ class CycleNotificationWorker(
         return Result.success()
     }
 }
-/*class CycleNotificationWorkerOLD(
-    context: Context,
-    params: WorkerParameters
-) : Worker(context, params) {
-
-    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    override fun doWork(): Result {
-        NotificationService.showNotification(applicationContext)
-        return Result.success()
-    }
-}*/

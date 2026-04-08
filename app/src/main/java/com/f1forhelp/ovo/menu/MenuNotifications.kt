@@ -56,6 +56,7 @@ import com.f1forhelp.ovo.menu.main.TimezoneDropdown
 
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
+import com.f1forhelp.ovo.notifications.NotificationService
 
 @Composable
 fun MenuNotifications(navController: NavController) {
@@ -73,8 +74,8 @@ fun MenuNotifications(navController: NavController) {
             .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Enable Notifications", modifier = Modifier.weight(1f))
-                Button(onClick = {}) {Text("Reset Scheduled Notifications")}
+                //Text("Enable Notifications", modifier = Modifier.weight(1f))
+                Button(onClick = { NotificationService.scheduleAllNotifications(context) }) {Text("Reset Scheduled Notifications")}
             }
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -101,7 +102,6 @@ fun MenuNotifications(navController: NavController) {
                         modifier=Modifier.weight(6f),
                         value = NotificationSettings.windowStart.intValue.toFloat(),
                         onValueChange = { newValue ->
-                            //NotificationSettings.windowStart.value = newValue.toInt().coerceAtMost(NotificationSettings.windowEnd.value)
                             NotificationSettings.windowStart.intValue = newValue.toInt()
                         },
                         valueRange = 0f..1440f,
@@ -119,7 +119,6 @@ fun MenuNotifications(navController: NavController) {
                         modifier=Modifier.weight(6f),
                         value = NotificationSettings.windowEnd.intValue.toFloat(),
                         onValueChange = { newValue ->
-                            //NotificationSettings.windowEnd.value = newValue.toInt().coerceAtLeast(NotificationSettings.windowStart.value)
                             NotificationSettings.windowEnd.intValue = newValue.toInt()
                         },
                         valueRange = 0f..1440f,
@@ -175,9 +174,10 @@ fun MenuNotifications(navController: NavController) {
                         modifier = Modifier
                             .height(42.dp),
                         //.width(200.dp),
-                        enabled = NotificationSettings.enabled.value
+                        enabled = NotificationSettings.enabled.value,
+                        contentPadding = PaddingValues(4.dp)
                     ) {
-                        Text("±1 MAD")
+                        Text(text="±1 MAD", fontSize = 12.sp)
                     }
                     Spacer(modifier = Modifier.width(4.dp))
 
@@ -189,9 +189,38 @@ fun MenuNotifications(navController: NavController) {
                         modifier = Modifier
                             .height(42.dp),
                         //.width(200.dp),
-                        enabled = NotificationSettings.enabled.value
+                        enabled = NotificationSettings.enabled.value,
+                        contentPadding = PaddingValues(4.dp)
                     ) {
-                        Text("±2 Days")
+                        Text(text="±2 Days", fontSize = 12.sp)
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Button(
+                        onClick = {
+                            NotificationSettings.add(NotificationObject("OvO Day!", true, NotificationType.OVO_DAY, 0.0))
+                        },
+                        modifier = Modifier
+                            .height(42.dp),
+                        //.width(200.dp),
+                        enabled = NotificationSettings.enabled.value,
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Text(text="OvO", fontSize = 12.sp)
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    Button(
+                        onClick = {
+                            NotificationSettings.add(NotificationObject("Day Of", true, NotificationType.DAY_OF, 0.0))
+                        },
+                        modifier = Modifier
+                            .height(42.dp),
+                        //.width(200.dp),
+                        enabled = NotificationSettings.enabled.value,
+                        contentPadding = PaddingValues(4.dp)
+                    ) {
+                        Text(text="Day Of", fontSize = 12.sp)
                     }
                 }
 
@@ -264,7 +293,7 @@ fun NotificationObjectSettings(item: NotificationObject) {
                 var isFocused by remember { mutableStateOf(false) }
                 var textValue by remember { mutableStateOf(item.value.toString()) }
 
-                if (item.type != NotificationType.DAY_OF) {
+                if (item.type != NotificationType.DAY_OF && item.type != NotificationType.OVO_DAY) {
                     BasicTextField(
                         value = textValue,
                         onValueChange = { newText ->

@@ -20,7 +20,7 @@ data class NotificationObject(
     val value: Double // Relative time before OR after predicted bleed event
 )
 enum class NotificationType {
-    DAYS, MAD, DAY_OF
+    DAYS, MAD, DAY_OF, OVO_DAY
 }
 
 object SettingsStore {

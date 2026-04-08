@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
@@ -95,4 +98,34 @@ fun PredictionText() {
     val madDays = cycle.madLength.toDaysDouble()
     val madDaysString = "%.1f".format(madDays)
     Text("Next bleed event in $daysLeftString±$madDaysString days")
+}
+
+@Composable
+fun NotificationListDialog(scheduled: List<String>, onDismiss: () -> Unit) {
+    var open by remember { mutableStateOf(true) }
+    if (open) {
+        AlertDialog(
+            onDismissRequest = {
+                open = false
+                onDismiss()
+            },
+            title = { Text("Scheduled Notifications") },
+            text = {
+                val scrollState = rememberScrollState()
+                androidx.compose.foundation.layout.Column(
+                    modifier = androidx.compose.ui.Modifier.verticalScroll(scrollState)
+                ) {
+                    scheduled.forEach { Text(it) }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    open = false
+                    onDismiss()
+                }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
 }
