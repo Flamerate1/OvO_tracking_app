@@ -43,6 +43,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.f1forhelp.ovo.SettingsStore
+import com.f1forhelp.ovo.SettingsStore.GeneralSettings
 import java.time.DateTimeException
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -56,18 +58,7 @@ fun InlineTimeDisplay(
     var hour by remember { mutableStateOf(0) }
     var minute by remember { mutableStateOf(0) }
 
-    val timezones = listOf("US/Eastern", "Asia/Shanghai", "Asia/Tokyo")
-    var timezone by remember { mutableStateOf(timezones[0]) }
-    val tzList = listOf(
-        "EST" to "US/Eastern",
-        "CST" to "US/Central",
-        "JST" to "Asia/Tokyo"
-    )
-    //var tzExpanded by remember { mutableStateOf(false) }
-    var selectedShort by remember { mutableStateOf("EST") }
-    var selectedFull by remember { mutableStateOf("US/Eastern") }
-
-    val dateValid by remember(month, day, hour, minute, selectedFull) {
+    val dateValid by remember(month, day, hour, minute, GeneralSettings.chosenTzFull) {
         derivedStateOf {
             try {
                 ZonedDateTime.of(
@@ -78,7 +69,7 @@ fun InlineTimeDisplay(
                     minute,
                     0,
                     0,
-                    ZoneId.of(selectedFull)
+                    ZoneId.of(GeneralSettings.chosenTzFull)
                 )
                 true
             } catch (e: DateTimeException) {
@@ -90,7 +81,7 @@ fun InlineTimeDisplay(
     val validColor = if (dateValid) Color.LightGray else Color(0xFFFFB3B3)
 
     fun updateToSystemTime() {
-        val now = ZonedDateTime.now(ZoneId.of(timezone))
+        val now = ZonedDateTime.now(ZoneId.of(GeneralSettings.chosenTzFull))
         month = now.monthValue
         day = now.dayOfMonth
         hour = now.hour
@@ -110,9 +101,7 @@ fun InlineTimeDisplay(
     ) {
         Column{
             Spacer(modifier=Modifier.size(5.dp))
-            // Row for month/day/hour/minute
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Reset fields to system time
                 ResetTimeFieldsButton { updateToSystemTime() }
 
                 // Month
@@ -135,16 +124,7 @@ fun InlineTimeDisplay(
                 //Spacer(modifier = Modifier.width(4.dp))
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Timezone dropdown
-                    TimezoneDropdown(
-                        timezones = tzList,
-                        selectedShort = selectedShort,
-                        onSelected = { short, full ->
-                            selectedShort = short
-                            selectedFull = full
-                            // Use selectedFull for ZonedDateTime computations
-                        }
-                    )
+                    TimezoneDropdown()
 
                     Spacer(modifier = Modifier.height(4.dp))
 
@@ -154,7 +134,7 @@ fun InlineTimeDisplay(
                             day,
                             hour,
                             minute,
-                            selectedFull,
+                            GeneralSettings.chosenTzFull,
                             onRecord,
                             LocalContext.current
                         )
@@ -220,36 +200,5 @@ fun StepperNumber(value: Int, onValueChange: (Int) -> Unit, min: Int, max: Int) 
             shape = CircleShape,
             contentPadding = PaddingValues(0.dp)
         ) { Text("▼") }
-    }
-}
-
-@Composable
-fun TimezoneDropdown(
-    timezones: List<Pair<String, String>>, // short -> full
-    selectedShort: String,
-    onSelected: (short: String, full: String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box(modifier = modifier) {
-        Button(onClick = { expanded = !expanded }) {
-            Text(selectedShort)
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            timezones.forEach { (short, full) ->
-                DropdownMenuItem(
-                    text = { Text(full) }, // show full name in the menu
-                    onClick = {
-                        onSelected(short, full)
-                        expanded = false
-                    }
-                )
-            }
-        }
     }
 }

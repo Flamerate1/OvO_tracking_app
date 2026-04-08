@@ -29,6 +29,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        SettingsStore.init(this)
+
         // ENABLE to set navigation bar to black at the bottom.
         // (actual set color happens below in setContent)
         WindowCompat.setDecorFitsSystemWindows(window, true)
