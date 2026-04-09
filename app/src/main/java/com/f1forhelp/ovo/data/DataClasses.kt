@@ -92,7 +92,7 @@ data class Cycle(
     val startMs: Long = 0L,
     val nextStartMs: Long = 0L,
     val length: Long = 0L,
-    val valid: Boolean = false,
+    val valid: Boolean = true,
 
     val medianLength: Long = 0L,
     val madLength: Long = 0L,
@@ -122,19 +122,19 @@ data class Cycle(
                 // Slice from beginning up to current
                 val currentEvents = bleedEvents.subList(0, i + 2) // i + 2 end index is exclusive
                 val newCycle = generateFromBleedEvents(currentEvents)
-
+                if (!newCycle.valid) {
+                    Log.d("CycleProblem","non-valid cycle encountered")
+                    newCycle.save()
+                    continue
+                }
 
                 // Compute Analysis
                 if (getMostRecent() != empty) {
                     val prevCycle = getMostRecent()
-                    val newAnalysis = Analysis.new(newCycle.startMs, prevCycle.predictedNextStartMs, mad).save()
+                    val newAnalysis = Analysis.new(newCycle.nextStartMs, prevCycle.predictedNextStartMs, mad).save()
                 }
                 newCycle.save()
-
-                //cycles.add(newCycle)
             }
-
-            //return cycles
         }
 
         fun generateFromMostRecent() {
@@ -224,7 +224,7 @@ data class Cycle(
 
         fun deleteByStartMs(startMs : Long) { db!!.cycleDao().deleteByEpoch(startMs)}
         fun deleteByPredictionDateMs(predictionDateMs : Long) { db!!.cycleDao().deleteByPredictionDateMs(predictionDateMs)}
-
+        fun deleteAll() = Cycle.Companion.db!!.cycleDao().deleteAll()
     }
 
     fun save() {

@@ -23,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.f1forhelp.ovo.data.BleedEvent
 
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.TextButton
@@ -35,6 +34,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import com.f1forhelp.ovo.AppManager
 import com.f1forhelp.ovo.data.Cycle
+import com.f1forhelp.ovo.data.BleedEvent
+import com.f1forhelp.ovo.data.Analysis
 import java.time.ZoneId
 
 import androidx.compose.foundation.background
@@ -176,36 +177,6 @@ fun CycleList() {
                 HorizontalDivider()
             }
         }
-
-        /*LazyColumn(
-            modifier = Modifier
-                .width(800.dp) // adjust to fit your widest row
-                .height(400.dp)
-                .border(3.dp, Color.Gray)
-                .statusBarsPadding()
-        ) {
-            items(cycles) { cycle ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth() // ensure the row uses full LazyColumn width
-                        .padding(8.dp)
-                        .clickable {
-                            candidateCycle = cycle
-                            showDeleteConfirmation = true
-                        },
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(cycle.asFormattedString(ZoneId.of("America/New_York")))
-                    VerticalDivider()
-                    Text("Hi some text")
-                    VerticalDivider()
-                    Text("Hi some more text")
-                    VerticalDivider()
-                    Text("Even more text")
-                }
-                HorizontalDivider()
-            }
-        }*/
     }
     Spacer(modifier = Modifier.height(16.dp))
 
@@ -219,15 +190,24 @@ fun CycleList() {
         Button(
             modifier = Modifier.weight(1f),
             onClick = {
-                //Cycle.generateFromMostRecent()
-                //cycles = Cycle.getAll()
                 Cycle.processIterativePredictions()
                 cycles = Cycle.getAll()
 
                 Toast.makeText(context, "Cycle Data Generated", Toast.LENGTH_SHORT).show()
             },
         ) {
-            Text("Generate Cycle Data")
+            Text("Generate Data")
+        }
+        Button(
+            modifier = Modifier.weight(1f),
+            onClick = {
+                Cycle.deleteAll()
+                cycles = Cycle.getAll()
+
+                Toast.makeText(context, "Cycle Data Deleted", Toast.LENGTH_SHORT).show()
+            },
+        ) {
+            Text("Delete All")
         }
     }
 
@@ -261,5 +241,93 @@ fun CycleList() {
                 }
             }
         )
+    }
+}
+
+
+@Composable
+fun AnalysisList() {
+    val context = LocalContext.current
+    var analyses by remember { mutableStateOf(Analysis.getAll()) }
+
+    val horizontalScrollState = rememberScrollState()
+
+
+    var candidateAnalysis by remember { mutableStateOf(Analysis.empty) }
+    var showDeleteConfirmation by remember {mutableStateOf(false)}
+
+    Row(
+        modifier = Modifier
+            .horizontalScroll(horizontalScrollState) // scroll the whole chart
+            .fillMaxWidth()
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .width(1500.dp)
+                .height(400.dp)
+                .border(3.dp, Color.Gray)
+                .statusBarsPadding()
+        ) {
+            // Header row
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.LightGray)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Id", modifier = Modifier.weight(1f))
+                    Text("Cycle Start", modifier = Modifier.weight(1f))
+                    Text("Prev. Prediction", modifier = Modifier.weight(1f))
+                    Text("Error", modifier = Modifier.weight(1f))
+                    Text("Normalized Error", modifier = Modifier.weight(1f))
+                    Text("Error Running Avg.", modifier = Modifier.weight(1f))
+                }
+                HorizontalDivider()
+            }
+
+            // Data rows
+            items(analyses) { analysis ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .clickable {
+                            candidateAnalysis = analysis
+                            showDeleteConfirmation = true
+                        },
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val v = analysis.toViewableAnalysis()
+                    Text(v.id, modifier = Modifier.weight(1f))
+                    Text(v.cycleStart, modifier = Modifier.weight(1f))
+                    Text(v.prevCyclePredictedNextStart, modifier = Modifier.weight(1f))
+                    Text(v.error, modifier = Modifier.weight(1f))
+                    Text(v.normalizedAbsError, modifier = Modifier.weight(1f))
+                    Text(v.runningAvgNormalizedError, modifier = Modifier.weight(1f))
+                }
+                HorizontalDivider()
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            modifier = Modifier.weight(1f),
+            onClick = {
+                Analysis.deleteAll()
+                Toast.makeText(context, "Analyses Deleted", Toast.LENGTH_SHORT).show()
+            },
+        ) {
+            Text("Delete All")
+        }
     }
 }

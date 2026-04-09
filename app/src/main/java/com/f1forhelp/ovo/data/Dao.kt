@@ -25,6 +25,9 @@ interface CycleDao {
     @Query("DELETE FROM cycles WHERE predictionDateMs = :predictionDateMs")
     fun deleteByPredictionDateMs(predictionDateMs: Long)
 
+    @Query("DELETE FROM cycles")
+    fun deleteAll()
+
     @Query("SELECT * FROM cycles ORDER BY startMs DESC")
     fun getAll(): List<Cycle>
 }

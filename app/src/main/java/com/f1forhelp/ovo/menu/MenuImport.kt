@@ -113,7 +113,8 @@ fun MenuImport(navController: NavController) {
                     bleedEvents.clear() // Clear the mutable list.
 
                     // Create new cycle data
-                    Cycle.generateFromMostRecent()
+                    //Cycle.generateFromMostRecent()
+                    Cycle.processIterativePredictions()
 
                     Toast.makeText(context, "Bleed Events Successfully Imported", Toast.LENGTH_SHORT).show()
                 },

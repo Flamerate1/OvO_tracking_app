@@ -114,8 +114,8 @@ object CycleProcesses {
         return lengths
     }
 
-    fun isLengthValid(length: Long): Boolean { // TODO Properly expand validity
-        return true
+    fun isLengthValid(length: Long, minDays: Long = 15, maxDays: Long = 45): Boolean {
+        return length.toDaysDouble().toLong() in minDays..maxDays
     }
     fun predictedNextStartMs(recentStartMs: Long, median: Long): Long {
         return recentStartMs + median

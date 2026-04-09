@@ -2,6 +2,7 @@ package com.f1forhelp.ovo.menu
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,10 +38,11 @@ fun MenuViewData(navController: NavController) {
 }
 @Composable
 fun DataViewChoice() {
-    val options = listOf("BleedEvent", "Cycle")
+    val options = listOf("BleedEvent", "Cycle", "Analysis")
     val content = listOf<@Composable () -> Unit>(
         { BleedEventList() },
-        { CycleList() }
+        { CycleList() },
+        { AnalysisList() }
     )
 
     var selected by remember { mutableStateOf(options[0]) }
@@ -63,7 +65,7 @@ fun TextButtonRadioGroup(
     val defaultColor = MaterialTheme.colorScheme.primary
     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Buttons row
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             options.forEach { option ->
                 val isSelected = option == selectedOption
                 Button(
@@ -71,7 +73,8 @@ fun TextButtonRadioGroup(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = if (isSelected) defaultColor else Color.Gray
-                    )
+                    ),
+                    contentPadding = PaddingValues(2.dp),
                 ) {
                     Text(option)
                 }
