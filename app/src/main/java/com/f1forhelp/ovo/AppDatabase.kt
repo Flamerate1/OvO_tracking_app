@@ -19,10 +19,11 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile private var INSTANCE: AppDatabase? = null
 
+        const val DESTROY_DATABASE = false
+
         fun getDatabase(context: Context): AppDatabase {
-            val destroyDatabase = false
             // Use to forcefully destroy database
-            if (destroyDatabase) {
+            if (DESTROY_DATABASE) {
                 context.deleteDatabase("ovo.db")
                 return INSTANCE ?: synchronized(this) {
                     val instance = Room.databaseBuilder(

@@ -37,6 +37,9 @@ interface AnalysisDao {
     @Query("DELETE FROM analyses WHERE id = :id")
     fun deleteById(id: Long)
 
+    @Query("DELETE FROM analyses")
+    fun deleteAll()
+
     @Query("SELECT * FROM analyses ORDER BY id DESC")
     fun getAll(): List<Analysis>
 }

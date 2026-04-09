@@ -219,8 +219,11 @@ fun CycleList() {
         Button(
             modifier = Modifier.weight(1f),
             onClick = {
-                Cycle.generateFromMostRecent()
+                //Cycle.generateFromMostRecent()
+                //cycles = Cycle.getAll()
+                Cycle.processIterativePredictions()
                 cycles = Cycle.getAll()
+
                 Toast.makeText(context, "Cycle Data Generated", Toast.LENGTH_SHORT).show()
             },
         ) {

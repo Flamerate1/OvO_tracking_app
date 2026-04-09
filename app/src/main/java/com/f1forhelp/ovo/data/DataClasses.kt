@@ -7,11 +7,13 @@ import androidx.room.PrimaryKey
 import com.f1forhelp.ovo.AppDatabase
 import com.f1forhelp.ovo.SettingsStore
 import com.f1forhelp.ovo.SettingsStore.CalculationSettings
+import com.f1forhelp.ovo.data.Analysis
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.Long
+import kotlin.math.abs
 
 fun List<BleedEvent>.toCycleLengths(): List<Long> {
     if (this.size < 2) return emptyList()
@@ -108,6 +110,31 @@ data class Cycle(
             if (db == null) {
                 db = AppDatabase.getDatabase(context)
             }
+        }
+
+        fun processIterativePredictions(bleedEvents: List<BleedEvent> = BleedEvent.getAll()) {
+            // Calculate Overall MAD
+            val lengths = BleedEvent.getAll().toCycleLengths()
+            val mad = CycleProcesses.computeEstimate(lengths).margin
+
+
+            for (i in 0 until bleedEvents.size - 1) {
+                // Slice from beginning up to current
+                val currentEvents = bleedEvents.subList(0, i + 2) // i + 2 end index is exclusive
+                val newCycle = generateFromBleedEvents(currentEvents)
+
+
+                // Compute Analysis
+                if (getMostRecent() != empty) {
+                    val prevCycle = getMostRecent()
+                    val newAnalysis = Analysis.new(newCycle.startMs, prevCycle.predictedNextStartMs, mad).save()
+                }
+                newCycle.save()
+
+                //cycles.add(newCycle)
+            }
+
+            //return cycles
         }
 
         fun generateFromMostRecent() {
@@ -256,11 +283,25 @@ data class Analysis(
     val cycleStartMs: Long = 0L,
     val prevCyclePredictedNextStart: Long = 0L,
     val error: Long = 0L, // = previousCycle.predictedNextStart - nextStartMs
-    val normalizedSbsError: Long = 0L, // = abs(error) / madLength
-    val tilNowAvgNormalizedError: Long = 0L, // = average(normalizedError of all cycles)
+    val normalizedAbsError: Double = 0.0, // = abs(error) / madLength
+    val runningAvgNormalizedError: Double = 0.0 // = average(normalizedError of all cycles)
 ) {
     companion object {
+        fun new(cycleStartMs: Long, prevCyclePredictedNextStart: Long, mad: Long): Analysis {
+            val error = prevCyclePredictedNextStart - cycleStartMs
+
+            val normalizedAbsError = abs(error.toDouble()) / mad
+
+            val allNormalizedAbsError = getAllNormalizedAbsError() + normalizedAbsError
+            val runningAvgNormalizedError = allNormalizedAbsError.average()
+
+            return Analysis(
+                nextId(), cycleStartMs, prevCyclePredictedNextStart,
+                error, normalizedAbsError, runningAvgNormalizedError
+            )
+        }
         var lastId = 0 // Used in creating the data object id.
+        fun nextId(): Int = ++lastId
 
         val empty = Analysis()
         var db: AppDatabase? = null
@@ -274,7 +315,38 @@ data class Analysis(
             val analyses = db!!.analysisDao().getAll().sortedBy{it.id}
             return analyses
         }
+        fun getAllNormalizedAbsError(): List<Double> {
+            val analyses = db!!.analysisDao().getAll().sortedBy{it.id}
+            val list = analyses.map { it.normalizedAbsError }
+            return list
+            //return list.toMutableList()
+        }
+        fun deleteAll() = db!!.analysisDao().deleteAll()
 
     }
+    fun save() {
+        db!!.analysisDao().insert(this)
+    }
 
+    fun toViewableAnalysis(): ViewableAnalysis {
+        return ViewableAnalysis(
+            id = id.toString(),
+
+            cycleStart = cycleStartMs.toFormattedDate(),
+            prevCyclePredictedNextStart = prevCyclePredictedNextStart.toFormattedDate(),
+
+            error = error.toString(),
+            normalizedAbsError = "%.2f".format(normalizedAbsError),
+            runningAvgNormalizedError = "%.2f".format(runningAvgNormalizedError)
+        )
+    }
 }
+
+data class ViewableAnalysis(
+    val id: String, // From Int. Normal
+    val cycleStart: String, // From Long. Show as DateTime
+    val prevCyclePredictedNextStart: String, // From Long. Show as DateTime
+    val error: String, // From Long. Normal
+    val normalizedAbsError: String, // From Double. Normal + 2 decimal places
+    val runningAvgNormalizedError: String // From Double. Normal + 2 decimal places
+)
