@@ -18,6 +18,7 @@ interface BleedEventDao {
 interface CycleDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(cycle: Cycle)
+
     @Query("DELETE FROM cycles WHERE startMs = :startMs")
     fun deleteByEpoch(startMs: Long)
 
@@ -26,4 +27,16 @@ interface CycleDao {
 
     @Query("SELECT * FROM cycles ORDER BY startMs DESC")
     fun getAll(): List<Cycle>
+}
+
+@Dao
+interface AnalysisDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insert(analysis: Analysis)
+
+    @Query("DELETE FROM analyses WHERE id = :id")
+    fun deleteById(id: Long)
+
+    @Query("SELECT * FROM analyses ORDER BY id DESC")
+    fun getAll(): List<Analysis>
 }

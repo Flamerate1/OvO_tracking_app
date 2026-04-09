@@ -96,11 +96,6 @@ data class Cycle(
     val madLength: Long = 0L,
     val validCycleCount: Int = 0,
 
-    //val fromPreviousPredictionError: Long = 0L, // = previousCycle.predictedNextStart - nextStartMs
-    //val absError: Long = 0L, // = abs(fromPreviousPredictionError)
-    //val normalizedError: Long = 0L, // = absError / madLength
-    //val tilNowAvgNormalizedError: Long = 0L, // = average(normalizedError of all cycles)
-
     val predictedNextStartMs: Long = 0L,
     val predictedNextOvulationMs: Long = 0L
 ) {
@@ -253,3 +248,33 @@ data class ViewableCycle(
     val medianLength: String, val madLength: String, val validCycleCount: String,
     val predictedNextStart: String, val predictedNextOvulation: String
 )
+
+@Entity(tableName = "analyses")
+data class Analysis(
+    @PrimaryKey
+    val id: Int = 0,
+    val cycleStartMs: Long = 0L,
+    val prevCyclePredictedNextStart: Long = 0L,
+    val error: Long = 0L, // = previousCycle.predictedNextStart - nextStartMs
+    val normalizedSbsError: Long = 0L, // = abs(error) / madLength
+    val tilNowAvgNormalizedError: Long = 0L, // = average(normalizedError of all cycles)
+) {
+    companion object {
+        var lastId = 0 // Used in creating the data object id.
+
+        val empty = Analysis()
+        var db: AppDatabase? = null
+        // Optional helper to initialize database safely
+        fun initDb(context: Context) {
+            if (db == null) {
+                db = AppDatabase.getDatabase(context)
+            }
+        }
+        fun getAll(): List<Analysis> {
+            val analyses = db!!.analysisDao().getAll().sortedBy{it.id}
+            return analyses
+        }
+
+    }
+
+}

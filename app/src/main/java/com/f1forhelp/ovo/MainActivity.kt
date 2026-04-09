@@ -22,6 +22,7 @@ import androidx.core.view.WindowCompat
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.await
+import com.f1forhelp.ovo.data.Analysis
 import com.f1forhelp.ovo.notifications.NotificationService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +45,7 @@ class MainActivity : ComponentActivity() {
         //region App Stuff
         BleedEvent.initDb(this)
         Cycle.initDb(this)
+        Analysis.initDb(this)
 
         val bleedEvents = BleedEvent.getAll()
         bleedEvents.forEach {
@@ -52,6 +54,10 @@ class MainActivity : ComponentActivity() {
         val cycles = Cycle.getAll()
         cycles.forEach {
             println("Prediction Date: ${it.predictionDateMs}")
+        }
+        val analyses = Analysis.getAll()
+        analyses.forEach {
+            println("Analysis Date: ${it.id}")
         }
 
         enableEdgeToEdge()
@@ -62,44 +68,10 @@ class MainActivity : ComponentActivity() {
 
 
         //region Notification Stuff
-        //NotificationService.createNotificationChannel(this)
         NotificationService.init(this)
         requestNotificationPermission()
-
-
-        // Simulate prediction result (e.g., 5 days from now)
-        //val predictedStartMs = System.currentTimeMillis() + 5 * 24 * 60 * 60 * 1000L
-
-        //ScheduleCycleNotification(this, 5)
         //endregion
     }
-    /*private fun createNotificationChannel() {
-        val name = "Cycle Notifications"
-        val descriptionText = "Notifications about predicted cycles"
-
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.deleteNotificationChannel(CHANNEL_ID) // remove old one
-
-        val importance = NotificationManager.IMPORTANCE_HIGH
-        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
-            description = descriptionText
-            enableVibration(true)
-            vibrationPattern = longArrayOf(
-                0, 50,
-                50, 50,
-                50, 50,
-                50, 50,
-                50, 50,
-                50, 50,
-                50, 50,
-                50, 50
-            )
-        }
-
-        val notificationManager: NotificationManager =
-            getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.createNotificationChannel(channel)
-    }*/
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissions(
