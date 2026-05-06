@@ -1,7 +1,10 @@
 package com.f1forhelp.ovo.menu.main
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ fun SettingsDialogBox(
                     navController.navigate("notifications")
                     onDismiss()
                 }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings")
                     Text("Notifications")
                 }
 
@@ -28,6 +32,7 @@ fun SettingsDialogBox(
                     navController.navigate("calculations")
                     onDismiss()
                 }) {
+                    Icon(Icons.Default.Settings, contentDescription = "Settings")
                     Text("Calculations")
                 }
 
